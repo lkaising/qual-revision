@@ -1,0 +1,43 @@
+# === macOS ===
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# === Editors / IDEs ===
+.vscode/
+
+# === Python (in case scripts get added) ===
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.env
+.env.local
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# === Node (in case anything web-ish appears) ===
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# === Jupyter ===
+.ipynb_checkpoints/
+
+# === Logs & temp ===
+*.log
+*.tmp
+*.bak
+*.orig
+
+# === Project-specific archives ===
+09_notes/*
+09_notes/**/*
+!09_notes/.gitkeep
