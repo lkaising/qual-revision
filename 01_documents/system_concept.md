@@ -62,7 +62,38 @@ $$P(\mathrm{PLAX}) + P(\mathrm{PSAX}) + P(\mathrm{A4C}) + P(\mathrm{other}) = 1.
 
 ### B. Adequacy components
 
-...
+The adequacy output estimates how well the input $I_t$ meets the criteria for an acceptable
+instance of the operator-selected target view. The output is a vector of component
+scores:
+
+$$\mathbf{a}_t = [\,a_{\text{visibility}},\; a_{\text{plane}},\; a_{\text{geometry}}\,]$$
+
+Each component is between 0 and 1. The components are independent and need not sum
+to 1; their total can fall anywhere in
+
+$$0 \le a_{\text{visibility}} + a_{\text{plane}} + a_{\text{geometry}} \le 3.$$
+
+The three components are:
+
+- **Anatomic visibility:** whether the structures required for the view are sufficiently visible.
+- **Plane and level correctness:** whether the image is at the intended plane and level.
+- **Geometric fidelity:** whether the anatomy has the expected shape and proportions.
+
+---
+
+*Defered until $v^*$ model decision point is addressed in prior sections.*
+
+The same three components are reported for every target view, but the criteria
+behind each component are defined per view, so visibility, plane correctness, and
+geometric fidelity mean view-specific things for PLAX, mid-papillary PSAX, and A4C.
+
+These components report which aspect of the target view is currently weak. They do
+not identify the physical cause of a poor image or specify how the probe should
+move; those are separate outputs.
+
+A scalar summary $Q(\mathbf{a}_t)$ may be derived from the components for plotting or
+for comparing conditions, but the choice of aggregation is a separate decision and
+is not fixed here. The individual components remain the primary output.
 
 ### C. Image-degradation state
 
