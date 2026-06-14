@@ -26,7 +26,7 @@ The controller then assigns different responsibilities to different physical dir
 
 ## 2. Runtime Perception Inputs
 
-The perception model's only runtime sensory input is $I_t$, the live 2D B-mode ultrasound image stream. The model is also given the operator-selected target view $v^*$ as a task condition:
+The perception model's only runtime sensory input is $I_t$, a live 2D B-mode ultrasound image stream. The model is also given the operator-selected target view $v^*$ as a task condition:
 
 $$v^* = \mathrm{PLAX}, \ \mathrm{PSAX}, \ \text{or} \ \mathrm{A4C}.$$
 
