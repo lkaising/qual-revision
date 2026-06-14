@@ -48,15 +48,13 @@ Each frame is preprocessed the same way as in training, and its acquisition time
 
 The image-processing system outputs a structured packet:
 
-$$\mathbf{y}_t =
-[\mathbf{p}^{view}_t,\; \mathbf{a}_t,\; \mathbf{c}_t,\; \mathbf{d}_t,\; u_t]$$
+$$\mathbf{y}_t = [\mathbf{p}^{view}_t,\; \mathbf{a}^{(v^*)}_t,\; \mathbf{c}_t,\; \mathbf{d}^{(v^*)}_t,\; u_t]$$
 
 ### A. View-identity probabilities
 
 At each update the model estimates which standard view the input $I_t$ shows. The output is a probability for each view:
 
-$$\mathbf{p}^{view}_t =
-[\,P(\mathrm{PLAX}),\; P(\mathrm{PSAX}),\; P(\mathrm{A4C}),\; P(\mathrm{other})\,]$$
+$$\mathbf{p}^{view}_t = [\,P(\mathrm{PLAX}),\; P(\mathrm{PSAX}),\; P(\mathrm{A4C}),\; P(\mathrm{other})\,]$$
 
 where each entry is the probability that $I_t$ is that view. Each is between 0 and 1, and the four add up to 1:
 
