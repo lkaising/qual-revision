@@ -68,7 +68,7 @@ scores:
 
 $$\mathbf{a}_t = [\,a_{\text{visibility}},\; a_{\text{plane}},\; a_{\text{geometry}}\,]$$
 
-Each component is between 0 and 1. The components are independent and need not sum
+Each component is between 0 and 1. The components are scored separately and need not sum
 to 1; their total can fall anywhere in
 
 $$0 \le a_{\text{visibility}} + a_{\text{plane}} + a_{\text{geometry}} \le 3.$$
