@@ -34,9 +34,7 @@ At update $t$, the model receives the most recent frame, or a short window of re
 
 $$I_t = (B_{t-K+1}, \ldots, B_t), \qquad K \ge 1,$$
 
-where $K$ is the number of frames: $K=1$ is a single frame and $K>1$ a short fixed window. The choice of $K$ is left to implementation. Each frame $B_t$ is a grayscale image, an $H \times W$ matrix of pixel values, so the stacked input has size
-
-$$H \times W \times K.$$
+where $K$ is the number of frames: $K=1$ is a single frame and $K>1$ a short fixed window. The choice of $K$ is left to implementation. Each frame $B_t$ is a grayscale image, an $H \times W$ matrix of pixel values, so the stacked input has size $H \times W \times K$.
 
 Each frame is preprocessed the same way as in training, and its acquisition time is recorded so output latency can be measured.
 
