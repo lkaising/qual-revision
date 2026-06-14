@@ -24,9 +24,13 @@ The controller then assigns different responsibilities to different physical dir
 * **Along the chest and in probe orientation:** refine the view through image-guided motion.
 * **Safety supervisor:** determine whether either controller is allowed to act.
 
-## 2. Runtime Perception Input
+## 2. Runtime Perception Inputs
 
-The perception model’s only runtime input is the live 2D B-mode ultrasound image stream. At update $t$, the model receives the most recent frame, or a short window of recent frames:
+The perception model's only runtime sensory input is $I_t$, the live 2D B-mode ultrasound image stream. The model is also given the operator-selected target view $v^*$ as a task condition:
+
+$$v^* = \mathrm{PLAX}, \ \mathrm{PSAX}, \ \text{or} \ \mathrm{A4C}.$$
+
+At update $t$, the model receives the most recent frame, or a short window of recent frames:
 
 $$I_t = (B_{t-K+1}, \ldots, B_t), \qquad K \ge 1,$$
 
