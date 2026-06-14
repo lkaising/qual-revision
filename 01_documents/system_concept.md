@@ -64,14 +64,11 @@ $$P(\mathrm{PLAX}) + P(\mathrm{PSAX}) + P(\mathrm{A4C}) + P(\mathrm{other}) = 1.
 
 ### B. Adequacy components
 
-The adequacy output estimates how well the input $I_t$ meets the criteria for an acceptable
-instance of the operator-selected target view. The output is a vector of component
-scores:
+The adequacy output estimates how well the input $I_t$ meets the criteria for an acceptable instance of the operator-selected target view $v^*$. The output is a vector of three component scores for the selected view, not one set per view:
 
-$$\mathbf{a}_t = [\,a_{\text{visibility}},\; a_{\text{plane}},\; a_{\text{geometry}}\,]$$
+$$\mathbf{a}^{(v^*)}_t = [\,a_{\text{visibility}},\; a_{\text{plane}},\; a_{\text{geometry}}\,]$$
 
-Each component is between 0 and 1. The components are scored separately and need not sum
-to 1; their total can fall anywhere in
+Each component is between 0 and 1. The components are scored separately and need not sum to 1; their total can fall anywhere in
 
 $$0 \le a_{\text{visibility}} + a_{\text{plane}} + a_{\text{geometry}} \le 3.$$
 
@@ -82,8 +79,6 @@ The three components are:
 - **Geometric fidelity:** whether the anatomy has the expected shape and proportions.
 
 ---
-
-*Defered until $v^*$ model decision point is addressed in prior sections.*
 
 The same three components are reported for every target view, but the criteria
 behind each component are defined per view, so visibility, plane correctness, and
