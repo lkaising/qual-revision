@@ -40,7 +40,7 @@ Each frame is preprocessed the same way as in training, and its acquisition time
 
 ## 3. Runtime Perception Model
 
-> Placeholder equation: $$\mathbf{y}_t = f(I_t)$$
+> Placeholder equation: $$\mathbf{y}_t = f(I_t, v^*)$$
 
 ...
 
