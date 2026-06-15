@@ -96,7 +96,25 @@ These components report image-based evidence only; confirming the physical cause
 
 ### D. Directional correction scores
 
-...
+The directional output reports which bounded probe adjustments are supported as improving the resulting image toward the operator-selected target view $v^*$, given $I_t$. It scores these adjustments for $v^*$, rather than for every possible target view.
+
+The adjustments are the five image-guided pose axes that remain after chest-normal translation is assigned to force control: two translations along the probe-footprint axes, which correspond approximately to local surface-following motion under maintained contact, and three rotations about the probe-fixed axes. These directions are defined in a probe-fixed frame: $x_p$ is the imaging-plane direction along the probe footprint, $y_p$ the perpendicular direction within the probe-face plane, and $z_p$ the probe normal.
+
+The output contains ten directional scores grouped into five opposed pairs, one pair per axis:
+
+$$\mathbf{d}^{(v^*)}_t = [\,(d_{T_{x_p}+},\, d_{T_{x_p}-}),\; (d_{T_{y_p}+},\, d_{T_{y_p}-}),\; (d_{R_{x_p}+},\, d_{R_{x_p}-}),\; (d_{R_{y_p}+},\, d_{R_{y_p}-}),\; (d_{R_{z_p}+},\, d_{R_{z_p}-})\,]$$
+
+Each directional score ranges from 0 to 1 and grades how strongly the corresponding adjustment is supported. The scores are not normalized, so several adjustments may receive support and all may be low. An all-low vector provides no supported directional correction.
+
+The five adjustments are:
+
+- **$x_p$-translation:** translation along the imaging-plane direction of the probe footprint.
+- **$y_p$-translation:** translation along the perpendicular direction within the probe-face plane.
+- **$x_p$-axis rotation:** rotation about the imaging-plane footprint axis.
+- **$y_p$-axis rotation:** rotation about the perpendicular probe-face axis.
+- **Axial rotation:** rotation about the probe-normal axis $z_p$.
+
+The controller combines these image-based scores with force, pose, robot state, and safety constraints to determine whether and how a movement is executed.
 
 ### E. Uncertainty or action-validity output
 
