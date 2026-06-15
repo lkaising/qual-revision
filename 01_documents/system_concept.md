@@ -66,7 +66,7 @@ The adequacy output estimates how well $I_t$ satisfies the criteria for an accep
 
 $$\mathbf{a}^{(v^*)}_t = [\,a_{\text{visibility}},\; a_{\text{plane}},\; a_{\text{geometry}}\,]$$
 
-Each component is between 0 and 1. The components are scored separately and need not sum to 1; their total can fall anywhere in
+Each component ranges from 0 to 1 and is scored separately; the components need not sum to 1:
 
 $$0 \le a_{\text{visibility}} + a_{\text{plane}} + a_{\text{geometry}} \le 3.$$
 
