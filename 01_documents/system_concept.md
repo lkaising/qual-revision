@@ -62,7 +62,7 @@ $$P(\mathrm{PLAX}) + P(\mathrm{PSAX}) + P(\mathrm{A4C}) + P(\mathrm{other}) = 1.
 
 ### B. Adequacy components
 
-The adequacy output estimates how well $I_t$ meets the criteria for an acceptable instance of the operator-selected target view $v^*$. The output is a vector of three component scores for the selected view, not one set per view:
+The adequacy output estimates how well $I_t$ satisfies the criteria for an acceptable instance of the operator-selected target view $v^*$. It contains three component scores for $v^*$, rather than a separate set of scores for each candidate view:
 
 $$\mathbf{a}^{(v^*)}_t = [\,a_{\text{visibility}},\; a_{\text{plane}},\; a_{\text{geometry}}\,]$$
 
