@@ -98,7 +98,7 @@ These components report image-based evidence only; confirming the physical cause
 
 The directional output evaluates a fixed set of bounded probe adjustments from $I_t$. Each score indicates how strongly the corresponding adjustment is supported as improving the image toward the selected target view $v^*$.
 
-The output scores the two in-face translations and the three rotations; translation along $z_p$ is assigned to force control. Each component is scored in its positive and negative directions, so the output is ten scores in five opposed pairs:
+The adjustments are defined in a probe-fixed frame: $x_p$ lies in the imaging plane, $y_p$ lies perpendicular to it within the probe face, and $z_p$ is normal to the probe face. The output scores translations along $x_p$ and $y_p$ and rotations about $x_p$, $y_p$, and $z_p$; translation along $z_p$ is assigned to force control. Each motion component is scored in its positive and negative directions, yielding ten scores grouped into five opposed pairs:
 
 $$\mathbf{d}^{(v^*)}_t = [\,(d_{T,x_p}^{+},\, d_{T,x_p}^{-}),\; (d_{T,y_p}^{+},\, d_{T,y_p}^{-}),\; (d_{R,x_p}^{+},\, d_{R,x_p}^{-}),\; (d_{R,y_p}^{+},\, d_{R,y_p}^{-}),\; (d_{R,z_p}^{+},\, d_{R,z_p}^{-})\,]$$
 
@@ -106,11 +106,13 @@ Each score ranges from 0 to 1. The scores are not normalized, so one or more adj
 
 The five motion components are:
 
-- **Translation along $x_p$:** sliding the probe along the imaging-plane direction.
-- **Translation along $y_p$:** sliding the probe along the perpendicular direction.
-- **Rotation about $x_p$:** tilting the probe about the imaging-plane axis.
-- **Rotation about $y_p$:** tilting the probe about the perpendicular axis.
-- **Rotation about $z_p$:** rotating the probe about its normal axis.
+- **Translation along $x_p$:** sliding the probe along $x_p$.
+- **Translation along $y_p$:** sliding the probe along $y_p$.
+- **Rotation about $x_p$:** tilting the probe about $x_p$.
+- **Rotation about $y_p$:** tilting the probe about $y_p$.
+- **Rotation about $z_p$:** rotating the probe about $z_p$.
+
+The scores indicate supported adjustment directions, not executable movements.
 
 ### E. Uncertainty or action-validity output
 
