@@ -92,7 +92,7 @@ The three components are:
 - **Acoustic shadowing:** localized or sector-shaped signal loss consistent with shadowing.
 - **Insufficient penetration:** depth-dependent signal loss consistent with insufficient penetration.
 
-These entries report image-based evidence only; they do not establish the physical cause.
+These entries report image-based evidence only; confirming the physical cause requires the force, pose, and motion signals as well.
 
 ### D. Directional correction scores
 
