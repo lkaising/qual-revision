@@ -80,7 +80,7 @@ These components report which aspect of the target view is weak, not why the ima
 
 ### C. Image-degradation state
 
-The image-degradation output reports evidence in $I_t$ that a physical or acoustic condition may be impairing acquisition. It is view-agnostic: the conditions it reports do not depend on the selected target view, so $\mathbf{c}_t$ is not conditioned on $v^*$.
+The image-degradation output reports evidence in $I_t$ that an acoustic condition may be impairing acquisition. It is view-agnostic: the conditions it reports do not depend on the selected target view, so $\mathbf{c}_t$ is not conditioned on $v^*$.
 
 $$\mathbf{c}_t = [\,c_{\text{coupling}},\; c_{\text{shadow}},\; c_{\text{penetration}}\,]$$
 
@@ -89,7 +89,7 @@ Each entry grades how strongly $I_t$ exhibits the corresponding degradation patt
 The three components are:
 
 - **Coupling impairment:** broad or near-surface signal loss consistent with poor acoustic coupling.
-- **Acoustic shadowing:** localized or sector-shaped signal loss consistent with shadowing by an intervening structure.
+- **Acoustic shadowing:** localized or sector-shaped signal loss consistent with shadowing.
 - **Insufficient penetration:** depth-dependent signal loss consistent with insufficient penetration.
 
 These entries report image-based evidence only; they do not establish the physical cause.
