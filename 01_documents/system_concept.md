@@ -64,7 +64,7 @@ $$P(\mathrm{PLAX}) + P(\mathrm{PSAX}) + P(\mathrm{A4C}) + P(\mathrm{other}) = 1.
 
 The adequacy output estimates how well $I_t$ satisfies the criteria for an acceptable instance of the operator-selected target view $v^*$. It contains three component scores for $v^*$, rather than a separate set of scores for each possible target view:
 
-$$\mathbf{a}^{(v^*)}_t = [\,a_{\text{visibility}},\; a_{\text{plane}},\; a_{\text{geometry}}\,]$$
+$$\mathbf{a}^{(v^*)}_t = [\,a_{\text{visibility}},\; a_{\text{plane}},\; a_{\text{geometry}}\,].$$
 
 Each component ranges from 0 to 1 and is scored separately; the components need not sum to 1:
 
@@ -80,9 +80,9 @@ These components report which aspect of the target view is weak, not why the ima
 
 ### C. Image-degradation state
 
-The image-degradation output reports evidence in $I_t$ that an acoustic condition may be impairing acquisition. It is view-agnostic: the conditions it reports do not depend on the selected target view, so $\mathbf{c}_t$ is not conditioned on $v^*$.
+The image-degradation output reports evidence in $I_t$ that an acoustic condition may be impairing acquisition. It is view-agnostic: the conditions it reports do not depend on the selected target view $v^*$. The output has three parts:
 
-$$\mathbf{c}_t = [\,c_{\text{coupling}},\; c_{\text{shadow}},\; c_{\text{penetration}}\,]$$
+$$\mathbf{c}_t = [\,c_{\text{coupling}},\; c_{\text{shadow}},\; c_{\text{penetration}}\,].$$
 
 Each entry grades how strongly $I_t$ exhibits the corresponding degradation pattern, from 0 (no evidence) to 1 (strong evidence). The entries are scored separately, and because more than one degradation can be present at once, they need not sum to 1.
 
