@@ -98,13 +98,11 @@ These components report image-based evidence only; confirming the physical cause
 
 The directional output evaluates a fixed set of bounded probe adjustments from $I_t$. Each score indicates how strongly the corresponding adjustment is supported as improving the image toward the selected target view $v^*$.
 
-The adjustments are defined in a probe-fixed frame: $x_p$ lies in the imaging plane, $y_p$ lies perpendicular to it within the probe face, and $z_p$ is normal to the probe face. The output scores the two in-face translations and the three rotations; translation along $z_p$ is assigned to force control.
-
-Each component is scored in its positive and negative directions, so the output is ten scores in five opposed pairs:
+The output scores the two in-face translations and the three rotations; translation along $z_p$ is assigned to force control. Each component is scored in its positive and negative directions, so the output is ten scores in five opposed pairs:
 
 $$\mathbf{d}^{(v^*)}_t = [\,(d_{T,x_p}^{+},\, d_{T,x_p}^{-}),\; (d_{T,y_p}^{+},\, d_{T,y_p}^{-}),\; (d_{R,x_p}^{+},\, d_{R,x_p}^{-}),\; (d_{R,y_p}^{+},\, d_{R,y_p}^{-}),\; (d_{R,z_p}^{+},\, d_{R,z_p}^{-})\,]$$
 
-Each score ranges from 0 to 1. The scores are not normalized, so several adjustments may receive support and all may be low. If all adjustment scores are low, no directional correction is supported.
+Each score ranges from 0 to 1. The scores are not normalized, so one or more adjustments may receive support. If all adjustment scores are low, no directional correction is supported.
 
 The five motion components are:
 
@@ -113,8 +111,6 @@ The five motion components are:
 - **Rotation about $x_p$:** tilting the probe about the imaging-plane axis.
 - **Rotation about $y_p$:** tilting the probe about the perpendicular axis.
 - **Rotation about $z_p$:** rotating the probe about its normal axis.
-
-These scores are image-based directional support; the controller decides whether and how to move, drawing on the force, pose, and safety information the perception model does not observe.
 
 ### E. Uncertainty or action-validity output
 
