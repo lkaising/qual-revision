@@ -96,25 +96,25 @@ These components report image-based evidence only; confirming the physical cause
 
 ### D. Directional correction scores
 
-The directional output scores how strongly each of a fixed set of bounded probe adjustments is supported as improving the resulting image toward the operator-selected target view $v^*$, given $I_t$.
+From $I_t$, the directional output scores how strongly each of a fixed set of bounded probe adjustments is supported as improving the resulting image toward the operator-selected target view $v^*$.
 
-The adjustments are defined in a probe-fixed frame with three axes: $x_p$ the imaging-plane axis along the probe footprint, $y_p$ the perpendicular axis in the probe face, and $z_p$ the probe-normal axis. They comprise translations in the probe face and rotations about these axes; translation along $z_p$ is assigned to force control and is not scored here. The two translations correspond approximately to local surface-following motion under maintained contact.
+The adjustments are defined in a probe-fixed frame in which $x_p$ and $y_p$ lie in the probe-face plane, with $x_p$ in the ultrasound imaging plane and $y_p$ perpendicular to $x_p$, and $z_p$ is normal to the probe face. The output scores the two translations in the probe-face plane and the rotations about all three axes. Translation along $z_p$ is assigned to force control and is not scored here. The two translations correspond approximately to local surface-following motion under maintained contact.
 
-The output contains ten scores grouped into five opposed pairs:
+Each component is scored in its positive and negative directions, so the output is ten scores in five opposed pairs:
 
-$$\mathbf{d}^{(v^*)}_t = [\,(d_{Tx_p}^{+},\, d_{Tx_p}^{-}),\; (d_{Ty_p}^{+},\, d_{Ty_p}^{-}),\; (d_{Rx_p}^{+},\, d_{Rx_p}^{-}),\; (d_{Ry_p}^{+},\, d_{Ry_p}^{-}),\; (d_{Rz_p}^{+},\, d_{Rz_p}^{-})\,]$$
+$$\mathbf{d}^{(v^*)}_t = [\,(d_{T,x_p}^{+},\, d_{T,x_p}^{-}),\; (d_{T,y_p}^{+},\, d_{T,y_p}^{-}),\; (d_{R,x_p}^{+},\, d_{R,x_p}^{-}),\; (d_{R,y_p}^{+},\, d_{R,y_p}^{-}),\; (d_{R,z_p}^{+},\, d_{R,z_p}^{-})\,]$$
 
 Each score ranges from 0 (no support) to 1 (strong support). The scores are not normalized, so several adjustments may receive support and all may be low. An all-low vector provides no supported directional correction.
 
-The five axes are:
+The five motion components are:
 
-- **Translation along $x_p$:** sliding the probe along the imaging-plane footprint direction.
-- **Translation along $y_p$:** sliding the probe along the perpendicular footprint direction.
-- **Rotation about $x_p$:** tilting the probe about the imaging-plane footprint axis.
-- **Rotation about $y_p$:** tilting the probe about the perpendicular footprint axis.
-- **Rotation about $z_p$:** rotating the probe about its normal axis.
+- **Translation along $x_p$:** sliding the probe along $x_p$.
+- **Translation along $y_p$:** sliding the probe along $y_p$.
+- **Rotation about $x_p$:** tilting the probe about $x_p$.
+- **Rotation about $y_p$:** tilting the probe about $y_p$.
+- **Rotation about $z_p$:** rotating the probe about $z_p$.
 
-The controller combines these image-based scores with force, pose, robot state, and safety constraints to determine whether and how a movement is executed.
+These scores are image-based directional support; the controller decides whether and how to move, drawing on the force, pose, and safety information the perception model does not observe.
 
 ### E. Uncertainty or action-validity output
 
