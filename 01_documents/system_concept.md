@@ -84,15 +84,15 @@ The image-degradation output reports evidence in $I_t$ that a physical or acoust
 
 $$\mathbf{c}_t = [\,c_{\text{coupling}},\; c_{\text{shadow}},\; c_{\text{penetration}}\,]$$
 
-Each entry grades how strongly $I_t$ exhibits a pattern consistent with its condition, from 0 (none) to 1 (strong). The entries are scored separately, and because more than one condition can be present at once they need not sum to 1:
-
-$$0 \le c_{\text{coupling}} + c_{\text{shadow}} + c_{\text{penetration}} \le 3.$$
+Each entry grades how strongly $I_t$ exhibits the corresponding degradation pattern, from 0 (no evidence) to 1 (strong evidence). The entries are scored separately, and because more than one degradation can be present at once, they need not sum to 1.
 
 The three components are:
 
 - **Coupling impairment:** broad or near-surface signal loss consistent with poor acoustic coupling.
 - **Acoustic shadowing:** localized or sector-shaped signal loss consistent with shadowing by an intervening structure.
 - **Insufficient penetration:** depth-dependent signal loss consistent with insufficient penetration.
+
+These entries report image-based evidence only; they do not establish the physical cause.
 
 ### D. Directional correction scores
 
