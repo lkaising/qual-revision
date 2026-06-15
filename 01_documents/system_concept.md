@@ -52,7 +52,7 @@ $$\mathbf{y}_t = [\mathbf{p}^{view}_t,\; \mathbf{a}^{(v^*)}_t,\; \mathbf{c}_t,\;
 
 ### A. View-identity probabilities
 
-At each update the model estimates which standard view the input $I_t$ shows. The output is a probability for each view:
+At each update the model estimates which standard view $I_t$ shows. The output is a probability for each view:
 
 $$\mathbf{p}^{view}_t = [\,P(\mathrm{PLAX}),\; P(\mathrm{PSAX}),\; P(\mathrm{A4C}),\; P(\mathrm{other})\,]$$
 
@@ -62,7 +62,7 @@ $$P(\mathrm{PLAX}) + P(\mathrm{PSAX}) + P(\mathrm{A4C}) + P(\mathrm{other}) = 1.
 
 ### B. Adequacy components
 
-The adequacy output estimates how well the input $I_t$ meets the criteria for an acceptable instance of the operator-selected target view $v^*$. The output is a vector of three component scores for the selected view, not one set per view:
+The adequacy output estimates how well $I_t$ meets the criteria for an acceptable instance of the operator-selected target view $v^*$. The output is a vector of three component scores for the selected view, not one set per view:
 
 $$\mathbf{a}^{(v^*)}_t = [\,a_{\text{visibility}},\; a_{\text{plane}},\; a_{\text{geometry}}\,]$$
 
@@ -78,17 +78,17 @@ The three components are:
 
 ---
 
-The same three components are reported for every target view, but the criteria
-behind each component are defined per view, so visibility, plane correctness, and
-geometric fidelity mean view-specific things for PLAX, mid-papillary PSAX, and A4C.
+The three components are the same whichever view is selected, but the criteria behind
+each are defined per view: plane and level correctness, for instance, means the image
+is at the mid-papillary level when the target is PSAX.
 
-These components report which aspect of the target view is currently weak. They do
-not identify the physical cause of a poor image or specify how the probe should
-move; those are separate outputs.
+These components report which aspect of the target view is currently weak. They do not
+identify the physical cause of a poor image or specify how the probe should move; those
+are separate outputs.
 
-A scalar summary $Q(\mathbf{a}_t)$ may be derived from the components for plotting or
-for comparing conditions, but the choice of aggregation is a separate decision and
-is not fixed here. The individual components remain the primary output.
+A scalar summary $Q(\mathbf{a}^{(v^*)}_t)$ may be derived from the components for
+plotting or for comparing conditions, but the choice of aggregation is a separate
+decision and is not fixed here. The individual components remain the primary output.
 
 ### C. Image-degradation state
 
