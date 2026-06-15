@@ -96,7 +96,7 @@ These components report image-based evidence only; confirming the physical cause
 
 ### D. Directional correction scores
 
-From $I_t$, the directional output scores how strongly each of a fixed set of bounded probe adjustments is supported as improving the resulting image toward the operator-selected target view $v^*$.
+The directional output evaluates a fixed set of bounded probe adjustments from $I_t$. Each score indicates how strongly the corresponding adjustment is supported as improving the image toward the selected target view $v^*$.
 
 The adjustments are defined in a probe-fixed frame: $x_p$ lies in the imaging plane, $y_p$ lies perpendicular to it within the probe face, and $z_p$ is normal to the probe face. The output scores the two in-face translations and the three rotations; translation along $z_p$ is assigned to force control.
 
