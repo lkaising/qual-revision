@@ -78,21 +78,21 @@ The three components are:
 
 These components report which aspect of the target view is weak, not why the image is poor or how the probe should move.
 
-### C. Image-degradation state
+### C. Image-degradation components
 
-The image-degradation output reports evidence in $I_t$ that an acoustic condition may be impairing acquisition. It is view-agnostic: the conditions it reports do not depend on the selected target view $v^*$. The output has three parts:
+The image-degradation output reports evidence in $I_t$ that an acoustic condition may be impairing acquisition. It is view-agnostic: the conditions it reports do not depend on the selected target view $v^*$. The output has three components:
 
 $$\mathbf{c}_t = [\,c_{\text{coupling}},\; c_{\text{shadow}},\; c_{\text{penetration}}\,].$$
 
-Each entry grades how strongly $I_t$ exhibits the corresponding degradation pattern, from 0 (no evidence) to 1 (strong evidence). The entries are scored separately, and because more than one degradation can be present at once, they need not sum to 1.
+Each component grades how strongly $I_t$ shows evidence for the corresponding degradation pattern, from 0 to 1. The components are scored separately, and because more than one degradation can be present at once, they need not sum to 1.
 
 The three components are:
 
 - **Coupling impairment:** broad or near-surface signal loss consistent with poor acoustic coupling.
-- **Acoustic shadowing:** localized or sector-shaped signal loss consistent with shadowing.
+- **Acoustic shadowing:** localized or wedge-shaped signal loss consistent with shadowing.
 - **Insufficient penetration:** depth-dependent signal loss consistent with insufficient penetration.
 
-These entries report image-based evidence only; confirming the physical cause requires the force, pose, and motion signals as well.
+These components report image-based evidence only; confirming the physical cause requires additional signals.
 
 ### D. Directional correction scores
 
