@@ -98,21 +98,21 @@ These components report image-based evidence only; confirming the physical cause
 
 From $I_t$, the directional output scores how strongly each of a fixed set of bounded probe adjustments is supported as improving the resulting image toward the operator-selected target view $v^*$.
 
-The adjustments are defined in a probe-fixed frame in which $x_p$ and $y_p$ lie in the probe-face plane, with $x_p$ in the ultrasound imaging plane and $y_p$ perpendicular to $x_p$, and $z_p$ is normal to the probe face. The output scores the two translations in the probe-face plane and the rotations about all three axes. Translation along $z_p$ is assigned to force control and is not scored here. The two translations correspond approximately to local surface-following motion under maintained contact.
+The adjustments are defined in a probe-fixed frame: $x_p$ lies in the imaging plane, $y_p$ lies perpendicular to it within the probe face, and $z_p$ is normal to the probe face. The output scores the two in-face translations and the three rotations; translation along $z_p$ is assigned to force control.
 
 Each component is scored in its positive and negative directions, so the output is ten scores in five opposed pairs:
 
 $$\mathbf{d}^{(v^*)}_t = [\,(d_{T,x_p}^{+},\, d_{T,x_p}^{-}),\; (d_{T,y_p}^{+},\, d_{T,y_p}^{-}),\; (d_{R,x_p}^{+},\, d_{R,x_p}^{-}),\; (d_{R,y_p}^{+},\, d_{R,y_p}^{-}),\; (d_{R,z_p}^{+},\, d_{R,z_p}^{-})\,]$$
 
-Each score ranges from 0 (no support) to 1 (strong support). The scores are not normalized, so several adjustments may receive support and all may be low. An all-low vector provides no supported directional correction.
+Each score ranges from 0 to 1. The scores are not normalized, so several adjustments may receive support and all may be low. If all adjustment scores are low, no directional correction is supported.
 
 The five motion components are:
 
-- **Translation along $x_p$:** sliding the probe along $x_p$.
-- **Translation along $y_p$:** sliding the probe along $y_p$.
-- **Rotation about $x_p$:** tilting the probe about $x_p$.
-- **Rotation about $y_p$:** tilting the probe about $y_p$.
-- **Rotation about $z_p$:** rotating the probe about $z_p$.
+- **Translation along $x_p$:** sliding the probe along the imaging-plane direction.
+- **Translation along $y_p$:** sliding the probe along the perpendicular direction.
+- **Rotation about $x_p$:** tilting the probe about the imaging-plane axis.
+- **Rotation about $y_p$:** tilting the probe about the perpendicular axis.
+- **Rotation about $z_p$:** rotating the probe about its normal axis.
 
 These scores are image-based directional support; the controller decides whether and how to move, drawing on the force, pose, and safety information the perception model does not observe.
 
