@@ -153,8 +153,7 @@ Only the adequacy and directional uncertainty components are target-conditioned 
 
 The perception system uses several models with the same architecture, trained separately with different initializations. At runtime, each model produces its own estimate from the same $\mathcal{I}_t$. For any one output component, let the resulting estimates be $s_t^{(1)},\ldots,s_t^{(N)}$. Their average is reported as the component value:
 
-$$s_t =
-\frac{s_t^{(1)}+\cdots+s_t^{(N)}}{N}.$$
+$$s_t = \frac{s_t^{(1)}+\cdots+s_t^{(N)}}{N}.$$
 
 The spread of these estimates defines the component uncertainty. Because each estimate lies between 0 and 1, twice the population standard deviation lies between 0 and 1:
 
