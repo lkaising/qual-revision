@@ -36,7 +36,9 @@ The image-perception model uses the live 2D brightness mode ultrasound image str
 
 $$v_{\mathrm{target}} \in \{\mathrm{PLAX}, \mathrm{PSAX}, \mathrm{A4C}\}.$$
 
-Force, robot pose, controller state, and recent actions are not inputs to the image-perception model; they are added later in the fused interaction state. At update $t$, the model receives either the most recent frame or a short fixed window of recent frames:
+Force, robot pose, controller state, and recent actions are not inputs to the image-perception model; they are added later in the fused interaction state.
+
+At update $t$, the model receives either the most recent frame or a short fixed window of recent frames:
 
 $$\mathcal{I}_t = (B_{t-K+1}, \ldots, B_t), \qquad K \ge 1,$$
 
