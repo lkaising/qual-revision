@@ -14,7 +14,7 @@ It produces a structured estimate of:
 
 1. which view is visible;
 2. whether it is diagnostically adequate;
-3. why the image may be inadequate;
+3. why the image may show evidence of degradation;
 4. which bounded probe adjustment is most likely to improve it;
 5. whether the estimate is reliable enough to act upon.
 
@@ -54,21 +54,21 @@ $$\mathbf{o}_t = [\mathbf{p}^{\mathrm{view}}_t,\; \mathbf{a}^{(v_{\mathrm{target
 
 At each update, the model estimates which standard view is shown in $\mathcal{I}_t$. The output is a probability for each view:
 
-$$\mathbf{p}^{\mathrm{view}}_t = [\,p_{\mathrm{PLAX},t},\; p_{\mathrm{PSAX},t},\; p_{\mathrm{A4C},t},\; p_{\mathrm{other},t}\,].$$
+$$\mathbf{p}^{\mathrm{view}}_t = [\,p_{\mathrm{PLAX}},\; p_{\mathrm{PSAX}},\; p_{\mathrm{A4C}},\; p_{\mathrm{other}}\,].$$
 
 where each entry is the probability that $\mathcal{I}_t$ shows that view. Every entry is between 0 and 1, and the four entries sum to 1:
 
-$$p_{\mathrm{PLAX},t} + p_{\mathrm{PSAX},t} + p_{\mathrm{A4C},t} + p_{\mathrm{other},t} = 1.$$
+$$p_{\mathrm{PLAX}} + p_{\mathrm{PSAX}} + p_{\mathrm{A4C}} + p_{\mathrm{other}} = 1.$$
 
 ### B. Target-View Adequacy Scores
 
 The adequacy output estimates how well $\mathcal{I}_t$ satisfies the adequacy criteria for the operator-selected target view $v_{\mathrm{target}}$. It reports three component scores for $v_{\mathrm{target}}$, rather than a separate set of scores for each possible target view:
 
-$$\mathbf{a}^{(v_{\mathrm{target}})}_t = [\,a_{\mathrm{visibility},t},\; a_{\mathrm{plane},t},\; a_{\mathrm{geometry},t}\,].$$
+$$\mathbf{a}^{(v_{\mathrm{target}})}_t = [\,a_{\mathrm{visibility}},\; a_{\mathrm{plane}},\; a_{\mathrm{geometry}}\,].$$
 
 Each component is scored separately from 0 to 1; together, the components can sum to any value from 0 to 3:
 
-$$0 \le a_{\mathrm{visibility},t} + a_{\mathrm{plane},t} + a_{\mathrm{geometry},t} \le 3.$$
+$$0 \le a_{\mathrm{visibility}} + a_{\mathrm{plane}} + a_{\mathrm{geometry}} \le 3.$$
 
 The three components are:
 
@@ -82,7 +82,7 @@ These components report which aspect of the target view is weak, not why the ima
 
 The image-degradation output reports evidence in $\mathcal{I}_t$ that acoustic conditions may be impairing acquisition. It is view-agnostic: these degradation patterns do not depend on the selected target view $v_{\mathrm{target}}$. The output has three components:
 
-$$\mathbf{e}^{\mathrm{deg}}_t = [\,e_{\mathrm{coupling},t},\; e_{\mathrm{shadow},t},\; e_{\mathrm{penetration},t}\,].$$
+$$\mathbf{e}^{\mathrm{deg}}_t = [\,e_{\mathrm{coupling}},\; e_{\mathrm{shadow}},\; e_{\mathrm{penetration}}\,].$$
 
 Each component scores the strength of evidence for the corresponding degradation pattern, from 0 to 1. Because more than one degradation can be present at once, the components are scored separately and need not sum to 1.
 
@@ -100,7 +100,7 @@ The directional-correction output evaluates a fixed set of probe adjustments for
 
 The adjustments are defined in a probe-fixed frame: $x_{\mathrm{p}}$ lies in the imaging plane, $y_{\mathrm{p}}$ lies perpendicular to it within the probe face, and $z_{\mathrm{p}}$ is normal to the probe face. The output scores translations along $x_{\mathrm{p}}$ and $y_{\mathrm{p}}$ and rotations about $x_{\mathrm{p}}$, $y_{\mathrm{p}}$, and $z_{\mathrm{p}}$; translation along $z_{\mathrm{p}}$ is assigned to force control. Each motion component is scored in its positive and negative directions, yielding ten scores grouped into five opposed pairs:
 
-$$\mathbf{d}^{(v_{\mathrm{target}})}_t = [\,(d_{\mathrm{T},x_{\mathrm{p}},t}^{+},\, d_{\mathrm{T},x_{\mathrm{p}},t}^{-}),\; (d_{\mathrm{T},y_{\mathrm{p}},t}^{+},\, d_{\mathrm{T},y_{\mathrm{p}},t}^{-}),\; (d_{\mathrm{R},x_{\mathrm{p}},t}^{+},\, d_{\mathrm{R},x_{\mathrm{p}},t}^{-}),\; (d_{\mathrm{R},y_{\mathrm{p}},t}^{+},\, d_{\mathrm{R},y_{\mathrm{p}},t}^{-}),\; (d_{\mathrm{R},z_{\mathrm{p}},t}^{+},\, d_{\mathrm{R},z_{\mathrm{p}},t}^{-})\,].$$
+$$\mathbf{d}^{(v_{\mathrm{target}})}_t = [\,(d_{\mathrm{T},x_{\mathrm{p}}}^{+},\, d_{\mathrm{T},x_{\mathrm{p}}}^{-}),\; (d_{\mathrm{T},y_{\mathrm{p}}}^{+},\, d_{\mathrm{T},y_{\mathrm{p}}}^{-}),\; (d_{\mathrm{R},x_{\mathrm{p}}}^{+},\, d_{\mathrm{R},x_{\mathrm{p}}}^{-}),\; (d_{\mathrm{R},y_{\mathrm{p}}}^{+},\, d_{\mathrm{R},y_{\mathrm{p}}}^{-}),\; (d_{\mathrm{R},z_{\mathrm{p}}}^{+},\, d_{\mathrm{R},z_{\mathrm{p}}}^{-})\,].$$
 
 Each score ranges from 0 to 1. The scores are not normalized, so one or more adjustments may receive support. If all adjustment scores are low, no directional correction is supported.
 
@@ -118,11 +118,7 @@ The scores indicate supported adjustment directions, not executable movement com
 
 The uncertainty output reports disagreement among independently trained models for each output group:
 
-$$\mathbf{u}_t =
-[\,u_{\mathrm{view},t},\;
-u_{\mathrm{adequacy},t}^{(v_{\mathrm{target}})},\;
-u_{\mathrm{degradation},t},\;
-u_{\mathrm{direction},t}^{(v_{\mathrm{target}})}\,].$$
+$$\mathbf{u}_t = [\,u_{\mathrm{view}},\; u_{\mathrm{adequacy}}^{(v_{\mathrm{target}})},\; u_{\mathrm{degradation}},\; u_{\mathrm{direction}}^{(v_{\mathrm{target}})}\,].$$
 
 Only the adequacy and directional uncertainty components are target-conditioned by $v_{\mathrm{target}}$.
 
@@ -133,11 +129,7 @@ $$s_t =
 
 The spread of these estimates defines the component uncertainty. Because each estimate lies between 0 and 1, twice the population standard deviation lies between 0 and 1:
 
-$$u_{s,t} =
-2\,\operatorname{SD}
-\left(
-s_t^{(1)},\ldots,s_t^{(N)}
-\right).$$
+$$u_{s,t} = 2\,\operatorname{SD} \left(s_t^{(1)},\ldots,s_t^{(N)} \right).$$
 
 For each output group, the reported uncertainty is the largest component uncertainty in that group.
 
