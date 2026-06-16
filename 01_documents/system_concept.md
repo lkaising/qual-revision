@@ -114,9 +114,37 @@ The five motion components are:
 
 The scores indicate supported adjustment directions, not executable movements.
 
-### E. Uncertainty or action-validity output
+### E. Image-perception uncertainty
 
-...
+The uncertainty output reports model-to-model disagreement for each perception branch:
+
+$$\mathbf{u}_t =
+[\,u_{\mathrm{view},t},\;
+u_{\mathrm{adequacy},t}^{(v^*)},\;
+u_{\mathrm{degradation},t},\;
+u_{\mathrm{direction},t}^{(v^*)}\,]$$
+
+As in the corresponding outputs, only adequacy and direction depend on the selected target view $v^*$.
+
+The perception system uses several separately trained copies of the same model. At runtime, each copy evaluates the same $I_t$ and produces its own estimate. For one output component, let those estimates be $x_t^{(1)},\ldots,x_t^{(N)}$. Their average is reported as the component value:
+
+$$x_t =
+\frac{x_t^{(1)}+\cdots+x_t^{(N)}}{N}.$$
+
+The spread of those estimates defines the component uncertainty. Because each estimate lies between 0 and 1, the population standard deviation is at most 0.5, so
+
+$$u_{x,t} =
+2\,\operatorname{SD}
+\left(
+x_t^{(1)},\ldots,x_t^{(N)}
+\right).$$
+
+Each branch reports the highest uncertainty among its components.
+
+- **Low uncertainty:** the models produce similar estimates.
+- **High uncertainty:** the models disagree substantially about at least one component.
+
+Close agreement does not by itself establish that an output is correct. This output describes image-perception uncertainty only; it does not determine whether robot movement is physically safe or permitted.
 
 ## #. Later Sections...
 
