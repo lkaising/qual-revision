@@ -32,17 +32,11 @@ The controller then assigns responsibilities across motion directions and superv
 
 ## 2. Runtime Inputs to Image Perception
 
-> - Define the current B-mode frame or short image window.
-> - Define the operator-selected target view as a task condition.
-> - Distinguish sensory input from task conditioning.
-> - Include preprocessing consistency and acquisition timestamps.
-> - Explicitly exclude force, robot pose, and controller state from the perception model.
-
-The perception model's only runtime sensory input is the live 2D B-mode ultrasound image stream, represented at update $t$ as $\mathcal{I}_t$. The model also receives the operator-selected target view $v_{\mathrm{target}}$ as a task condition:
+The image-perception model uses the live 2D brightness mode ultrasound image stream as its only runtime sensory input, represented at update $t$ as $\mathcal{I}_t$. The model also receives the operator-selected target view $v_{\mathrm{target}}$ as a task condition:
 
 $$v_{\mathrm{target}} \in \{\mathrm{PLAX}, \mathrm{PSAX}, \mathrm{A4C}\}.$$
 
-At update $t$, the model receives either the most recent frame or a short fixed window of recent frames:
+Force, robot pose, controller state, and recent actions are not inputs to the image-perception model; they are added later in the fused interaction state. At update $t$, the model receives either the most recent frame or a short fixed window of recent frames:
 
 $$\mathcal{I}_t = (B_{t-K+1}, \ldots, B_t), \qquad K \ge 1,$$
 
@@ -307,6 +301,14 @@ Close agreement does not guarantee that an output is correct. This output descri
 ---
 
 ## Archived Notes & Guidelines
+
+### 2. Runtime Inputs to Image Perception
+
+> - Define the current B-mode frame or short image window.
+> - Define the operator-selected target view as a task condition.
+> - Distinguish sensory input from task conditioning.
+> - Include preprocessing consistency and acquisition timestamps.
+> - Explicitly exclude force, robot pose, and controller state from the perception model.
 
 ### 4. Structured Image-Perception Packet
 
