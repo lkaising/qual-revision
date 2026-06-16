@@ -116,7 +116,7 @@ The scores indicate supported adjustment directions, not executable movements.
 
 ### E. Image-perception uncertainty
 
-The uncertainty output reports model-to-model disagreement for each perception branch:
+The uncertainty output reports disagreement among independently trained models for each perception branch:
 
 $$\mathbf{u}_t =
 [\,u_{\mathrm{view},t},\;
@@ -124,14 +124,14 @@ u_{\mathrm{adequacy},t}^{(v^*)},\;
 u_{\mathrm{degradation},t},\;
 u_{\mathrm{direction},t}^{(v^*)}\,]$$
 
-As in the corresponding outputs, only adequacy and direction depend on the selected target view $v^*$.
+Only the adequacy and directional uncertainty components are target-conditioned by $v^*$.
 
-The perception system uses several separately trained copies of the same model. At runtime, each copy evaluates the same $I_t$ and produces its own estimate. For one output component, let those estimates be $x_t^{(1)},\ldots,x_t^{(N)}$. Their average is reported as the component value:
+The perception system uses several models with the same architecture, trained separately from different initial conditions. At runtime, each model produces its own estimate from the same $I_t$. For one output component, let the resulting estimates be $x_t^{(1)},\ldots,x_t^{(N)}$. Their average is reported as the component value:
 
 $$x_t =
 \frac{x_t^{(1)}+\cdots+x_t^{(N)}}{N}.$$
 
-The spread of those estimates defines the component uncertainty. Because each estimate lies between 0 and 1, the population standard deviation is at most 0.5, so
+The spread of these estimates defines the component uncertainty. Because each estimate lies between 0 and 1, the population standard deviation is at most 0.5, so
 
 $$u_{x,t} =
 2\,\operatorname{SD}
@@ -139,12 +139,12 @@ $$u_{x,t} =
 x_t^{(1)},\ldots,x_t^{(N)}
 \right).$$
 
-Each branch reports the highest uncertainty among its components.
+For each output group, the reported uncertainty is the largest component uncertainty in that group.
 
-- **Low uncertainty:** the models produce similar estimates.
-- **High uncertainty:** the models disagree substantially about at least one component.
+- **Low uncertainty:** the models produce similar estimates for that output group.
+- **High uncertainty:** the models produce different estimates for at least one component in that output group.
 
-Close agreement does not by itself establish that an output is correct. This output describes image-perception uncertainty only; it does not determine whether robot movement is physically safe or permitted.
+Close agreement does not guarantee that an output is correct. This output describes image-perception uncertainty only; physical action validity is determined downstream.
 
 ## #. Later Sections...
 
