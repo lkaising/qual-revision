@@ -1,4 +1,10 @@
-## 1. System Concept and Scope
+## 1. System Concept, Scope, and Information Flow
+
+> - Define the operator-selected target view and near-window probe placement.
+> - State operator responsibilities: gel, initial orientation, authorization, monitoring, pause, and stop.
+> - Distinguish supervised local refinement from full autonomous scanning.
+> - Show the full flow: perception, fusion, control proposal, safety approval, robot action, observed response.
+> - State what the robot automates and what remains under operator authority.
 
 The operator places the probe near the selected acoustic window and selects the target view. The robot then performs bounded local refinement and maintenance.
 
@@ -24,7 +30,13 @@ The controller then assigns responsibilities across motion directions and superv
 * **Along the chest and in probe orientation:** refine the view through image-guided motion.
 * **Safety supervisor:** determine whether either controller is allowed to act.
 
-## 2. Runtime Inputs to the Perception Model
+## 2. Runtime Inputs to Image Perception
+
+> - Define the current B-mode frame or short image window.
+> - Define the operator-selected target view as a task condition.
+> - Distinguish sensory input from task conditioning.
+> - Include preprocessing consistency and acquisition timestamps.
+> - Explicitly exclude force, robot pose, and controller state from the perception model.
 
 The perception model's only runtime sensory input is the live 2D B-mode ultrasound image stream, represented at update $t$ as $\mathcal{I}_t$. The model also receives the operator-selected target view $v_{\mathrm{target}}$ as a task condition:
 
@@ -38,13 +50,46 @@ where $K$ is the number of frames: $K=1$ is a single frame, and $K>1$ is a short
 
 Frames are preprocessed the same way as in training, and acquisition times are recorded so output latency can be measured.
 
-## 3. Image-Based Perception Model
+## 3. Image-Perception Model and Target Conditioning
 
-> Placeholder equation: $$\mathbf{o}_t = f(\mathcal{I}_t, v_{\mathrm{target}})$$
+### A. Model Architecture and Target Conditioning
 
-...
+> - Describe a representative pretrained image encoder, such as a ResNet-based backbone.
+> - Define separate output branches or heads.
+> - Keep view and degradation branches image-only.
+> - Make adequacy and directional branches target-conditioned or target-selected.
+> - Prevent target-label leakage into view classification.
+> - Lock the output interface while leaving exact architecture choices open.
 
-## 4. Structured Perception Outputs
+### B. Training Data, Labels, and Preprocessing
+
+> - Use patient- or recording-level train, validation, and test splits.
+> - Prevent frame, clip, patient, and study leakage.
+> - Include transfer learning and ultrasound-specific preprocessing.
+> - Standardize across devices, image sizes, depth, gain, operators, and sites.
+> - Separate visible-view labels from requested-target labels.
+> - Define expert adequacy rubrics and handling of datasets without adequacy labels.
+> - Allow branch-specific or masked losses when labels are missing.
+
+### C. Training, Validation, and Runtime Characterization
+
+> - Evaluate the model on held-out data.
+> - Characterize calibration, ensemble disagreement, and uncertainty behavior.
+> - Measure temporal stability and abrupt output changes.
+> - Measure inference latency and update rate.
+> - Test generalization across devices and operators.
+> - Include off-target and difficult near-target cases.
+> - Evaluate whether uncertainty identifies unreliable predictions.
+
+## 4. Structured Image-Perception Packet
+
+> - Keep the existing A-E subsections and responsibility boundaries.
+> - View output answers what is visible.
+> - Adequacy output answers which aspect of the selected target is weak.
+> - Degradation output answers what image pattern may be impairing acquisition.
+> - Direction output answers which bounded geometric adjustment is supported.
+> - Uncertainty output answers how much the image models disagree.
+> - Do not let packet outputs become physical-state determinations, robot commands, or safety decisions.
 
 The perception system outputs a structured packet:
 
@@ -138,6 +183,129 @@ For each output group, the reported uncertainty is the largest component uncerta
 
 Close agreement does not guarantee that an output is correct. This output describes image-perception uncertainty only; physical action validity is determined downstream.
 
-## #. Later Sections...
+## 5. Physical Platform and Fused Interaction State
 
-...
+### A. Robot, Force Sensing, and Local Coordinate Frames
+
+> - Define the robotic arm and controlled probe degrees of freedom.
+> - State the basic role of forward and inverse kinematics.
+> - Define wrist force/torque sensing or equivalent force estimation.
+> - Include measured normal force, tangential force, and contact torque.
+> - Define robot-base, end-effector, probe-fixed, and local chest-contact frames.
+> - Define the estimated local chest-surface normal and tangent plane.
+> - Note that the local frame may change over a curved, moving, or deformable chest.
+> - Explain how local-frame or probe-frame corrections become robot commands.
+
+### B. Fused State, Timing, and Action-Response History
+
+> - Combine the perception packet, pose, force/torque, local frame, timestamps, and recent commands.
+> - Include frame age and alignment of commands with resulting images.
+> - Track recent image and force responses after actions.
+> - Assess contact stability and sensor consistency.
+> - Interpret likely pose displacement, coupling impairment, attenuation or shadowing, chest motion, and uncertain conditions.
+> - Distinguish fused reliability from image-model uncertainty.
+> - Mention optional local effective compliance or force-response information without claiming a complete chest model.
+
+## 6. Hybrid Force and Pose Control
+
+### A. Control Responsibilities and Robot Command Generation
+
+> - Assign the normal direction primarily to force control.
+> - Assign tangent-plane translations and probe rotations primarily to image-guided refinement.
+> - Acknowledge that force and pose remain physically coupled.
+> - Define proposed corrections in the local contact or probe frame.
+> - Apply safety and kinematic filtering before execution.
+> - Convert accepted corrections into end-effector or joint commands.
+> - Bound command magnitude and velocity.
+
+### B. Bounded Image-Guided Tangential and Angular Refinement
+
+> - Use a fixed set of candidate tangential and angular adjustments.
+> - Rank or score candidates using the directional output.
+> - Remove unsafe or infeasible actions.
+> - Let the controller choose step magnitude.
+> - Allow mechanical and imaging settling time.
+> - Evaluate post-action adequacy response.
+> - Accept, reject, or reverse actions.
+> - Reduce step size near attainment.
+> - Prevent repeated motion and overshoot.
+> - Explain this as derivative-free local refinement.
+
+### C. Constant and Adaptive Normal-Force Control
+
+> - Include a representative force or admittance-control law.
+> - Define constant force as a fixed force reference, not fixed normal position.
+> - Define adaptive force as bounded changes to the force reference.
+> - State that both modes may move normally.
+> - Let image evidence influence force only after fusion with measured physical state.
+> - Explain when additional force may improve coupling or penetration.
+> - Explain why force should not automatically increase for shadowing, adequate-force coupling loss, or persistent poor images.
+> - Include force-adjustment acceptance, retention, rejection, or reversal.
+> - Use the same image-guided pose strategy in both force modes where possible.
+
+## 7. Safety and Runtime Operation
+
+### A. Action Gating and Physical Limits
+
+> - Define force magnitude and force-rate limits.
+> - Define torque, translation, angle, velocity, and workspace limits.
+> - Reject action under stale images, excessive latency, or communication loss.
+> - Reject action under invalid or inconsistent sensors.
+> - Reduce autonomy under high model uncertainty or low fused reliability.
+> - Stop repeated non-improving actions.
+> - Include operator stop input.
+> - Distinguish model uncertainty from final action validity.
+
+### B. Initialization, Refinement, Attainment, Maintenance, and Recovery
+
+> - Use one compact numbered runtime sequence:
+>   1. operator setup and near-window placement;
+>   2. gradual establishment of safe contact;
+>   3. validation of force, pose, image, timing, and reliability;
+>   4. proposal and gating of one bounded adjustment;
+>   5. evaluation of resulting image and force response;
+>   6. sustained target attainment;
+>   7. lower-amplitude maintenance corrections;
+>   8. cause-aware recovery after persistent degradation.
+> - Avoid separate headings for each runtime state.
+
+### C. Hold, Unload, Retraction, and Operator Handoff
+
+> - Define conditions for holding position.
+> - Maintain safe contact without active refinement when appropriate.
+> - Include controlled reduction of force.
+> - Include retraction or emergency stopping.
+> - Respond to loss of imaging or communication.
+> - Return authority under persistent uncertainty or inability to recover.
+> - Request gel, repositioning, or operator inspection when needed.
+> - Preserve operator pause, takeover, and termination authority.
+
+## 8. Technical Requirements and Validation
+
+### A. Latency, Stability, and Predictability Requirements
+
+> - Include inference latency.
+> - Include complete-loop latency.
+> - Include update rate.
+> - Include temporal variation under held conditions.
+> - Include detection or handling of abrupt score jumps.
+> - Define persistence requirements before action.
+> - Include uncertainty calibration.
+> - Include directional consistency.
+> - Justify numerical ranges using intended use, engineering need, or literature.
+
+### B. Controller, Safety, and Operating-Envelope Validation
+
+> - Test directional action-response accuracy.
+> - Test force tracking and compliance response.
+> - Compare constant and adaptive force modes.
+> - Test pose and force coupling under different local surface conditions.
+> - Test overshoot and repeated-action behavior.
+> - Test safety stop and operator override.
+> - Test attainment, maintenance, and recovery behavior.
+> - Define stage-specific operating envelopes for phantom and volunteer use.
+> - Define fallback behavior when requirements are not met.
+> - Prefer one compact table:
+>
+> | Property | Requirement | How measured | Response if unmet |
+> | -------- | ----------- | ------------ | ----------------- |
