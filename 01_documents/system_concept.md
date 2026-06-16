@@ -1,12 +1,6 @@
 ## 1. System Concept, Scope, and Information Flow
 
-> - Define the operator-selected target view and near-window probe placement.
-> - State operator responsibilities: gel, initial orientation, authorization, monitoring, pause, and stop.
-> - Distinguish supervised local refinement from full autonomous scanning.
-> - Show the full flow: perception, fusion, control proposal, safety approval, robot action, observed response.
-> - State what the robot automates and what remains under operator authority.
-
-The operator places the probe near the selected acoustic window and selects the target view. The robot then performs bounded local refinement and maintenance.
+The operator places the probe near the selected acoustic window, selects the target view, applies gel, initially orients the probe, authorizes and monitors robot assistance, and may pause or stop it at any time. The robot performs only bounded local refinement and maintenance; it does not fully autonomously scan or choose a new acoustic window.
 
 At each update, the system combines:
 
@@ -303,6 +297,14 @@ Close agreement does not guarantee that an output is correct. This output descri
 ---
 
 ## Archived Notes & Guidelines
+
+### 1. System Concept, Scope, and Information Flow
+
+> - Define the operator-selected target view and near-window probe placement.
+> - State operator responsibilities: gel, initial orientation, authorization, monitoring, pause, and stop.
+> - Distinguish supervised local refinement from full autonomous scanning.
+> - Show the full flow: perception, fusion, control proposal, safety approval, robot action, observed response.
+> - State what the robot automates and what remains under operator authority.
 
 ### 2. Runtime Inputs to Image Perception
 
