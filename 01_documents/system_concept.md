@@ -1,4 +1,4 @@
-## 1. System Overview
+## 1. System Concept and Scope
 
 The operator places the probe near the selected acoustic window and selects the target view. The robot then performs bounded local refinement and maintenance.
 
@@ -24,7 +24,7 @@ The controller then assigns responsibilities across motion directions and superv
 * **Along the chest and in probe orientation:** refine the view through image-guided motion.
 * **Safety supervisor:** determine whether either controller is allowed to act.
 
-## 2. Runtime Perception Inputs
+## 2. Runtime Inputs to the Perception Model
 
 The perception model's only runtime sensory input is the live 2D B-mode ultrasound image stream, represented at update $t$ as $I_t$. The model also receives the operator-selected target view $v^*$ as a task condition:
 
@@ -38,19 +38,19 @@ where $K$ is the number of frames: $K=1$ is a single frame, and $K>1$ is a short
 
 Frames are preprocessed the same way as in training, and acquisition times are recorded so output latency can be measured.
 
-## 3. Runtime Perception Model
+## 3. Image-Based Perception Model
 
 > Placeholder equation: $$\mathbf{y}_t = f(I_t, v^*)$$
 
 ...
 
-## 4. Runtime Perception Output
+## 4. Structured Perception Outputs
 
 The perception system outputs a structured packet:
 
 $$\mathbf{y}_t = [\mathbf{p}^{view}_t,\; \mathbf{a}^{(v^*)}_t,\; \mathbf{c}_t,\; \mathbf{d}^{(v^*)}_t,\; \mathbf{u}_t].$$
 
-### A. View-identity probabilities
+### A. View Classification Probabilities
 
 At each update, the model estimates which standard view is shown in $I_t$. The output is a probability for each view:
 
@@ -60,7 +60,7 @@ where each entry is the probability that $I_t$ shows that view. Every entry is b
 
 $$P(\mathrm{PLAX}) + P(\mathrm{PSAX}) + P(\mathrm{A4C}) + P(\mathrm{other}) = 1.$$
 
-### B. Adequacy components
+### B. Target-View Adequacy Scores
 
 The adequacy output estimates how well $I_t$ satisfies the adequacy criteria for the operator-selected target view $v^*$. It reports three component scores for $v^*$, rather than a separate set of scores for each possible target view:
 
@@ -78,7 +78,7 @@ The three components are:
 
 These components report which aspect of the target view is weak, not why the image is poor or how the probe should move.
 
-### C. Image-degradation components
+### C. Image Degradation Evidence Scores
 
 The image-degradation output reports evidence in $I_t$ that acoustic conditions may be impairing acquisition. It is view-agnostic: these degradation patterns do not depend on the selected target view $v^*$. The output has three components:
 
@@ -94,7 +94,7 @@ The three components are:
 
 These components report image-based evidence only; confirming a physical cause requires additional signals.
 
-### D. Directional correction scores
+### D. Probe Adjustment Direction Scores
 
 The directional-correction output evaluates a fixed set of probe adjustments for local refinement using $I_t$. Each score indicates how strongly $I_t$ supports the corresponding adjustment as likely to improve the image toward the selected target view $v^*$.
 
@@ -114,7 +114,7 @@ The five motion components are:
 
 The scores indicate supported adjustment directions, not executable movement commands.
 
-### E. Image-perception uncertainty
+### E. Image-Based Perception Uncertainty
 
 The uncertainty output reports disagreement among independently trained models for each output group:
 
