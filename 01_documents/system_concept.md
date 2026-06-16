@@ -26,13 +26,13 @@ The controller then assigns responsibilities across motion directions and superv
 
 ## 2. Runtime Inputs to the Perception Model
 
-The perception model's only runtime sensory input is the live 2D B-mode ultrasound image stream, represented at update $t$ as $I_t$. The model also receives the operator-selected target view $v^*$ as a task condition:
+The perception model's only runtime sensory input is the live 2D B-mode ultrasound image stream, represented at update $t$ as $\mathcal{I}_t$. The model also receives the operator-selected target view $v_{\mathrm{target}}$ as a task condition:
 
-$$v^* \in \{\mathrm{PLAX}, \mathrm{PSAX}, \mathrm{A4C}\}.$$
+$$v_{\mathrm{target}} \in \{\mathrm{PLAX}, \mathrm{PSAX}, \mathrm{A4C}\}.$$
 
 At update $t$, the model receives either the most recent frame or a short fixed window of recent frames:
 
-$$I_t = (B_{t-K+1}, \ldots, B_t), \qquad K \ge 1,$$
+$$\mathcal{I}_t = (B_{t-K+1}, \ldots, B_t), \qquad K \ge 1,$$
 
 where $K$ is the number of frames: $K=1$ is a single frame, and $K>1$ is a short fixed window. The implementation chooses $K$. Each frame $B_i$ is a grayscale $H \times W$ matrix of pixel values, so the stacked input has size $H \times W \times K$.
 
@@ -40,7 +40,7 @@ Frames are preprocessed the same way as in training, and acquisition times are r
 
 ## 3. Image-Based Perception Model
 
-> Placeholder equation: $$\mathbf{y}_t = f(I_t, v^*)$$
+> Placeholder equation: $$\mathbf{o}_t = f(\mathcal{I}_t, v_{\mathrm{target}})$$
 
 ...
 
@@ -48,27 +48,27 @@ Frames are preprocessed the same way as in training, and acquisition times are r
 
 The perception system outputs a structured packet:
 
-$$\mathbf{y}_t = [\mathbf{p}^{view}_t,\; \mathbf{a}^{(v^*)}_t,\; \mathbf{c}_t,\; \mathbf{d}^{(v^*)}_t,\; \mathbf{u}_t].$$
+$$\mathbf{o}_t = [\mathbf{p}^{\mathrm{view}}_t,\; \mathbf{a}^{(v_{\mathrm{target}})}_t,\; \mathbf{e}^{\mathrm{deg}}_t,\; \mathbf{d}^{(v_{\mathrm{target}})}_t,\; \mathbf{u}_t].$$
 
 ### A. View Classification Probabilities
 
-At each update, the model estimates which standard view is shown in $I_t$. The output is a probability for each view:
+At each update, the model estimates which standard view is shown in $\mathcal{I}_t$. The output is a probability for each view:
 
-$$\mathbf{p}^{view}_t = [\,P(\mathrm{PLAX}),\; P(\mathrm{PSAX}),\; P(\mathrm{A4C}),\; P(\mathrm{other})\,].$$
+$$\mathbf{p}^{\mathrm{view}}_t = [\,p_{\mathrm{PLAX},t},\; p_{\mathrm{PSAX},t},\; p_{\mathrm{A4C},t},\; p_{\mathrm{other},t}\,].$$
 
-where each entry is the probability that $I_t$ shows that view. Every entry is between 0 and 1, and the four entries sum to 1:
+where each entry is the probability that $\mathcal{I}_t$ shows that view. Every entry is between 0 and 1, and the four entries sum to 1:
 
-$$P(\mathrm{PLAX}) + P(\mathrm{PSAX}) + P(\mathrm{A4C}) + P(\mathrm{other}) = 1.$$
+$$p_{\mathrm{PLAX},t} + p_{\mathrm{PSAX},t} + p_{\mathrm{A4C},t} + p_{\mathrm{other},t} = 1.$$
 
 ### B. Target-View Adequacy Scores
 
-The adequacy output estimates how well $I_t$ satisfies the adequacy criteria for the operator-selected target view $v^*$. It reports three component scores for $v^*$, rather than a separate set of scores for each possible target view:
+The adequacy output estimates how well $\mathcal{I}_t$ satisfies the adequacy criteria for the operator-selected target view $v_{\mathrm{target}}$. It reports three component scores for $v_{\mathrm{target}}$, rather than a separate set of scores for each possible target view:
 
-$$\mathbf{a}^{(v^*)}_t = [\,a_{\text{visibility}},\; a_{\text{plane}},\; a_{\text{geometry}}\,].$$
+$$\mathbf{a}^{(v_{\mathrm{target}})}_t = [\,a_{\mathrm{visibility},t},\; a_{\mathrm{plane},t},\; a_{\mathrm{geometry},t}\,].$$
 
 Each component is scored separately from 0 to 1; together, the components can sum to any value from 0 to 3:
 
-$$0 \le a_{\text{visibility}} + a_{\text{plane}} + a_{\text{geometry}} \le 3.$$
+$$0 \le a_{\mathrm{visibility},t} + a_{\mathrm{plane},t} + a_{\mathrm{geometry},t} \le 3.$$
 
 The three components are:
 
@@ -80,9 +80,9 @@ These components report which aspect of the target view is weak, not why the ima
 
 ### C. Image Degradation Evidence Scores
 
-The image-degradation output reports evidence in $I_t$ that acoustic conditions may be impairing acquisition. It is view-agnostic: these degradation patterns do not depend on the selected target view $v^*$. The output has three components:
+The image-degradation output reports evidence in $\mathcal{I}_t$ that acoustic conditions may be impairing acquisition. It is view-agnostic: these degradation patterns do not depend on the selected target view $v_{\mathrm{target}}$. The output has three components:
 
-$$\mathbf{c}_t = [\,c_{\text{coupling}},\; c_{\text{shadow}},\; c_{\text{penetration}}\,].$$
+$$\mathbf{e}^{\mathrm{deg}}_t = [\,e_{\mathrm{coupling},t},\; e_{\mathrm{shadow},t},\; e_{\mathrm{penetration},t}\,].$$
 
 Each component scores the strength of evidence for the corresponding degradation pattern, from 0 to 1. Because more than one degradation can be present at once, the components are scored separately and need not sum to 1.
 
@@ -96,21 +96,21 @@ These components report image-based evidence only; confirming a physical cause r
 
 ### D. Probe Adjustment Direction Scores
 
-The directional-correction output evaluates a fixed set of probe adjustments for local refinement using $I_t$. Each score indicates how strongly $I_t$ supports the corresponding adjustment as likely to improve the image toward the selected target view $v^*$.
+The directional-correction output evaluates a fixed set of probe adjustments for local refinement using $\mathcal{I}_t$. Each score indicates how strongly $\mathcal{I}_t$ supports the corresponding adjustment as likely to improve the image toward the selected target view $v_{\mathrm{target}}$.
 
-The adjustments are defined in a probe-fixed frame: $x_p$ lies in the imaging plane, $y_p$ lies perpendicular to it within the probe face, and $z_p$ is normal to the probe face. The output scores translations along $x_p$ and $y_p$ and rotations about $x_p$, $y_p$, and $z_p$; translation along $z_p$ is assigned to force control. Each motion component is scored in its positive and negative directions, yielding ten scores grouped into five opposed pairs:
+The adjustments are defined in a probe-fixed frame: $x_{\mathrm{p}}$ lies in the imaging plane, $y_{\mathrm{p}}$ lies perpendicular to it within the probe face, and $z_{\mathrm{p}}$ is normal to the probe face. The output scores translations along $x_{\mathrm{p}}$ and $y_{\mathrm{p}}$ and rotations about $x_{\mathrm{p}}$, $y_{\mathrm{p}}$, and $z_{\mathrm{p}}$; translation along $z_{\mathrm{p}}$ is assigned to force control. Each motion component is scored in its positive and negative directions, yielding ten scores grouped into five opposed pairs:
 
-$$\mathbf{d}^{(v^*)}_t = [\,(d_{T,x_p}^{+},\, d_{T,x_p}^{-}),\; (d_{T,y_p}^{+},\, d_{T,y_p}^{-}),\; (d_{R,x_p}^{+},\, d_{R,x_p}^{-}),\; (d_{R,y_p}^{+},\, d_{R,y_p}^{-}),\; (d_{R,z_p}^{+},\, d_{R,z_p}^{-})\,].$$
+$$\mathbf{d}^{(v_{\mathrm{target}})}_t = [\,(d_{\mathrm{T},x_{\mathrm{p}},t}^{+},\, d_{\mathrm{T},x_{\mathrm{p}},t}^{-}),\; (d_{\mathrm{T},y_{\mathrm{p}},t}^{+},\, d_{\mathrm{T},y_{\mathrm{p}},t}^{-}),\; (d_{\mathrm{R},x_{\mathrm{p}},t}^{+},\, d_{\mathrm{R},x_{\mathrm{p}},t}^{-}),\; (d_{\mathrm{R},y_{\mathrm{p}},t}^{+},\, d_{\mathrm{R},y_{\mathrm{p}},t}^{-}),\; (d_{\mathrm{R},z_{\mathrm{p}},t}^{+},\, d_{\mathrm{R},z_{\mathrm{p}},t}^{-})\,].$$
 
 Each score ranges from 0 to 1. The scores are not normalized, so one or more adjustments may receive support. If all adjustment scores are low, no directional correction is supported.
 
 The five motion components are:
 
-- **Translation along $x_p$:** sliding the probe along $x_p$.
-- **Translation along $y_p$:** sliding the probe along $y_p$.
-- **Rotation about $x_p$:** tilting the probe about $x_p$.
-- **Rotation about $y_p$:** tilting the probe about $y_p$.
-- **Rotation about $z_p$:** rotating the probe about $z_p$.
+- **Translation along $x_{\mathrm{p}}$:** sliding the probe along $x_{\mathrm{p}}$.
+- **Translation along $y_{\mathrm{p}}$:** sliding the probe along $y_{\mathrm{p}}$.
+- **Rotation about $x_{\mathrm{p}}$:** tilting the probe about $x_{\mathrm{p}}$.
+- **Rotation about $y_{\mathrm{p}}$:** tilting the probe about $y_{\mathrm{p}}$.
+- **Rotation about $z_{\mathrm{p}}$:** rotating the probe about $z_{\mathrm{p}}$.
 
 The scores indicate supported adjustment directions, not executable movement commands.
 
@@ -120,23 +120,23 @@ The uncertainty output reports disagreement among independently trained models f
 
 $$\mathbf{u}_t =
 [\,u_{\mathrm{view},t},\;
-u_{\mathrm{adequacy},t}^{(v^*)},\;
+u_{\mathrm{adequacy},t}^{(v_{\mathrm{target}})},\;
 u_{\mathrm{degradation},t},\;
-u_{\mathrm{direction},t}^{(v^*)}\,].$$
+u_{\mathrm{direction},t}^{(v_{\mathrm{target}})}\,].$$
 
-Only the adequacy and directional uncertainty components are target-conditioned by $v^*$.
+Only the adequacy and directional uncertainty components are target-conditioned by $v_{\mathrm{target}}$.
 
-The perception system uses several models with the same architecture, trained separately with different initializations. At runtime, each model produces its own estimate from the same $I_t$. For any one output component, let the resulting estimates be $x_t^{(1)},\ldots,x_t^{(N)}$. Their average is reported as the component value:
+The perception system uses several models with the same architecture, trained separately with different initializations. At runtime, each model produces its own estimate from the same $\mathcal{I}_t$. For any one output component, let the resulting estimates be $s_t^{(1)},\ldots,s_t^{(N)}$. Their average is reported as the component value:
 
-$$x_t =
-\frac{x_t^{(1)}+\cdots+x_t^{(N)}}{N}.$$
+$$s_t =
+\frac{s_t^{(1)}+\cdots+s_t^{(N)}}{N}.$$
 
 The spread of these estimates defines the component uncertainty. Because each estimate lies between 0 and 1, twice the population standard deviation lies between 0 and 1:
 
-$$u_{x,t} =
+$$u_{s,t} =
 2\,\operatorname{SD}
 \left(
-x_t^{(1)},\ldots,x_t^{(N)}
+s_t^{(1)},\ldots,s_t^{(N)}
 \right).$$
 
 For each output group, the reported uncertainty is the largest component uncertainty in that group.
