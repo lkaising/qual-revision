@@ -316,7 +316,6 @@ Close agreement does not guarantee that an output is correct. This output descri
 
 ### 4. Structured Image-Perception Packet
 
-> - Keep the existing A-E subsections and responsibility boundaries.
 > - View output answers what is visible.
 > - Adequacy output answers which aspect of the selected target is weak.
 > - Degradation output answers what image pattern may be impairing acquisition.
