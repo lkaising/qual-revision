@@ -83,15 +83,9 @@ Frames are preprocessed the same way as in training, and acquisition times are r
 
 ## 4. Structured Image-Perception Packet
 
-> - Keep the existing A-E subsections and responsibility boundaries.
-> - View output answers what is visible.
-> - Adequacy output answers which aspect of the selected target is weak.
-> - Degradation output answers what image pattern may be impairing acquisition.
-> - Direction output answers which bounded geometric adjustment is supported.
-> - Uncertainty output answers how much the image models disagree.
-> - Do not let packet outputs become physical-state determinations, robot commands, or safety decisions.
+The perception packet organizes the image model output into five groups: view probabilities $\mathbf{p}^{\mathrm{view}}_t$, target-view adequacy scores $\mathbf{a}^{(v_{\mathrm{target}})}_t$, image-degradation evidence $\mathbf{e}^{\mathrm{deg}}_t$, probe-adjustment direction scores $\mathbf{d}^{(v_{\mathrm{target}})}_t$, and image-based uncertainty $\mathbf{u}_t$.
 
-The perception system outputs a structured packet:
+Together, these quantities form the structured output:
 
 $$\mathbf{o}_t = [\mathbf{p}^{\mathrm{view}}_t,\; \mathbf{a}^{(v_{\mathrm{target}})}_t,\; \mathbf{e}^{\mathrm{deg}}_t,\; \mathbf{d}^{(v_{\mathrm{target}})}_t,\; \mathbf{u}_t].$$
 
@@ -309,3 +303,17 @@ Close agreement does not guarantee that an output is correct. This output descri
 >
 > | Property | Requirement | How measured | Response if unmet |
 > | -------- | ----------- | ------------ | ----------------- |
+
+---
+
+## Archived Notes & Guidelines
+
+### 4. Structured Image-Perception Packet
+
+> - Keep the existing A-E subsections and responsibility boundaries.
+> - View output answers what is visible.
+> - Adequacy output answers which aspect of the selected target is weak.
+> - Degradation output answers what image pattern may be impairing acquisition.
+> - Direction output answers which bounded geometric adjustment is supported.
+> - Uncertainty output answers how much the image models disagree.
+> - Do not let packet outputs become physical-state determinations, robot commands, or safety decisions.
