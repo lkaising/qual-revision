@@ -174,7 +174,7 @@ A robotic manipulator holds the probe and controls it in all six degrees of free
 
 $$\Delta \mathbf{x}_{\mathrm{img}} = [\Delta x_{\mathrm{p}},\ \Delta y_{\mathrm{p}},\ \Delta\theta_{x_{\mathrm{p}}},\ \Delta\theta_{y_{\mathrm{p}}},\ \Delta\theta_{z_{\mathrm{p}}}].$$
 
-The probe-face normal, translation along $z_{\mathrm{p}}$, is handled through force regulation.
+The sixth degree of freedom, translation along the probe-face normal $z_{\mathrm{p}}$, is controlled through force regulation.
 
 The robot-base, end-effector/sensor, and probe-fixed frames carry these quantities through a calibrated chain:
 
