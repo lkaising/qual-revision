@@ -170,7 +170,40 @@ Close agreement does not guarantee that an output is correct. This output descri
 
 ### A. Robot, Force Sensing, and Local Coordinate Frames
 
+A robotic manipulator holds the probe and controls its full six-degree-of-freedom pose. The pose separates into the five image-guided adjustment directions defined in Section 4D and the probe-face normal direction:
 
+- **Image-guided directions:** translations along $x_{\mathrm{p}}$ and $y_{\mathrm{p}}$ and rotations about $x_{\mathrm{p}}$, $y_{\mathrm{p}}$, and $z_{\mathrm{p}}$, refined from the image.
+- **Normal direction:** translation along $z_{\mathrm{p}}$, assigned primarily to force regulation and excluded from the image-guided set.
+
+This is the partition used by the perception packet: the directional output scores the five image-guided directions, and the normal direction is governed by force rather than by an image-predicted translation.
+
+Four coordinate frames organize the physical quantities:
+
+- **Robot-base frame:** the fixed reference for probe pose and workspace.
+- **End-effector/sensor frame:** the wrist frame in which the force/torque measurement is observed.
+- **Probe-fixed frame:** the frame $(x_{\mathrm{p}}, y_{\mathrm{p}}, z_{\mathrm{p}})$ of Section 4D, rigidly attached to the probe face.
+- **Local contact frame:** the frame of the current probe-patient contact, defined below.
+
+The transforms among the base, end-effector/sensor, and probe-fixed frames are calibrated and treated as known: the base-to-end-effector transform follows from the joint states, and the end-effector-to-probe transform from a fixed mounting calibration. The relationship between the probe-fixed and local contact frames is not fixed; it is estimated and changes with contact geometry.
+
+Forward kinematics map the measured joint states to the current probe pose. Inverse kinematics map an approved bounded Cartesian probe correction to joint-space motion. Section 5A defines these relationships at the role level; Section 6A selects, bounds, and executes the correction.
+
+The local contact frame is defined by a time-varying contact representation:
+
+- **Estimated normal $\hat{\mathbf{n}}_t$:** the estimated local chest-surface normal.
+- **Tangent plane:** the plane orthogonal to $\hat{\mathbf{n}}_t$ at the contact.
+- **Timestamp:** the time to which the estimate corresponds.
+- **Validity status:** whether the current estimate is usable.
+
+The chest is curved, moving, and deformable, so this representation is re-estimated as the contact geometry changes rather than assumed fixed. The method used to estimate $\hat{\mathbf{n}}_t$ and the tangent plane is an implementation choice and is deferred.
+
+The robot observes a compensated wrench in the end-effector/sensor frame, with tool weight and sensor bias removed. Normal force, tangential force, and contact torque are not native sensor outputs; they are derived by transforming this wrench into a common frame and decomposing it relative to the estimated contact geometry. Writing the resulting contact force as $\mathbf{f}_t$ and moment as $\boldsymbol{\tau}_t$:
+
+$$F_n = \hat{\mathbf{n}}_t \cdot \mathbf{f}_t, \qquad \mathbf{f}^{\mathrm{tan}}_t = \mathbf{f}_t - F_n\,\hat{\mathbf{n}}_t.$$
+
+$F_n$ is the normal force along $\hat{\mathbf{n}}_t$, $\mathbf{f}^{\mathrm{tan}}_t$ is the tangential force in the contact tangent plane, and $\boldsymbol{\tau}_t$ is the contact torque resolved at the contact. Because the decomposition is taken relative to the estimated contact geometry, these quantities depend on that estimate.
+
+The probe-face normal $z_{\mathrm{p}}$ and the estimated chest-surface normal $\hat{\mathbf{n}}_t$ coincide only when the probe sits square to the surface; in general they differ, so probe-frame and contact-frame quantities are related through the estimated contact representation. One consequence is that an image-guided move along $x_{\mathrm{p}}$ or $y_{\mathrm{p}}$ is not purely tangential to the chest surface when the probe is tilted, so it can change the normal force. Section 5A defines these frames and relationships; selecting a correction, bounding it, accounting for this coupling, and executing it belong to Section 6A.
 
 ### B. Fused State, Timing, and Action-Response History
 
