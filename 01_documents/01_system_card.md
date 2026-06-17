@@ -182,11 +182,11 @@ $$\mathbf{T}_{\mathrm{bp},t} = \mathbf{T}_{\mathrm{bs},t}(\mathbf{q}_t)\,\mathbf
 
 Forward kinematics gives the base-to-sensor transform $\mathbf{T}_{\mathrm{bs},t}$ from the current joint states $\mathbf{q}_t$, and $\mathbf{T}_{\mathrm{sp}}$ is the fixed sensor-to-probe calibration. Inverse kinematics maps an approved probe correction to joint motion.
 
-The local contact representation gives the current contact geometry:
+The local contact representation contains the estimated chest-surface normal, tangent plane, estimate time, and validity:
 
-$$\mathcal{C}_t = (\hat{\mathbf{n}}_t,\ \Pi_t,\ \tau^{\mathcal{C}}_t,\ \mathrm{valid}^{\mathcal{C}}_t),$$
+$$\mathcal{C}_t = (\hat{\mathbf{n}}_t,\ \Pi_t,\ \tau^{\mathcal{C}}_t,\ \mathrm{valid}^{\mathcal{C}}_t).$$
 
-where $\hat{\mathbf{n}}_t$ is the estimated local chest-surface normal, $\Pi_t$ the tangent plane, $\tau^{\mathcal{C}}_t$ the estimate time, and $\mathrm{valid}^{\mathcal{C}}_t$ whether the estimate is usable. It is re-estimated as the contact geometry changes. The estimation method and any tangent-axis convention are deferred.
+It is re-estimated as the probe moves and the chest surface deforms. The implementation chooses how $\hat{\mathbf{n}}_t$ and $\Pi_t$ are estimated and what makes an estimate usable.
 
 The force/torque sensor observes a compensated wrench in the end-effector/sensor frame, with tool weight and bias removed, providing contact force $\mathbf{f}_t$ and contact torque $\boldsymbol{\tau}_t$. Normal and tangential force are not measured directly but decomposed relative to $\hat{\mathbf{n}}_t$:
 
