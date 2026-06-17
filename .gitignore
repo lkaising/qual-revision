@@ -41,3 +41,4 @@ yarn-error.log*
 09_notes/*
 09_notes/**/*
 !09_notes/.gitkeep
+!09_notes/review_council.md
