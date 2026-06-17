@@ -170,14 +170,7 @@ Close agreement does not guarantee that an output is correct. This output descri
 
 ### A. Robot, Force Sensing, and Local Coordinate Frames
 
-> - Define the robotic arm and controlled probe degrees of freedom.
-> - State the basic role of forward and inverse kinematics.
-> - Define wrist force/torque sensing or equivalent force estimation.
-> - Include measured normal force, tangential force, and contact torque.
-> - Define robot-base, end-effector, probe-fixed, and local chest-contact frames.
-> - Define the estimated local chest-surface normal and tangent plane.
-> - Note that the local frame may change over a curved, moving, or deformable chest.
-> - Explain how local-frame or probe-frame corrections become robot commands.
+
 
 ### B. Fused State, Timing, and Action-Response History
 
@@ -321,3 +314,16 @@ Close agreement does not guarantee that an output is correct. This output descri
 > - Direction output answers which bounded geometric adjustment is supported.
 > - Uncertainty output answers how much the image models disagree.
 > - Do not let packet outputs become physical-state determinations, robot commands, or safety decisions.
+
+### 5. Physical Platform and Fused Interaction State
+
+#### A. Robot, Force Sensing, and Local Coordinate Frames
+
+> - Define the robotic arm and controlled probe degrees of freedom.
+> - State the basic role of forward and inverse kinematics.
+> - Define wrist force/torque sensing or equivalent force estimation.
+> - Include measured normal force, tangential force, and contact torque.
+> - Define robot-base, end-effector, probe-fixed, and local chest-contact frames.
+> - Define the estimated local chest-surface normal and tangent plane.
+> - Note that the local frame may change over a curved, moving, or deformable chest.
+> - Explain how local-frame or probe-frame corrections become robot commands.
