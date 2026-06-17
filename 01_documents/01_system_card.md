@@ -60,9 +60,9 @@ $$\mathbf{a}^{(v_{\mathrm{target}})}_t = h_{\mathrm{adequacy}}(\mathbf{h}_t,\ v_
 
 - **Backbone.** $E$ is a representative pretrained image encoder, such as a ResNet-based convolutional network, adapted by transfer learning. This interface is fixed; the exact backbone is a deferred implementation choice.
 - **Target conditioning.** Conditioning is realized either as target-selected heads, one per view and chosen at runtime by $v_{\mathrm{target}}$, or as one head conditioned on a learned view embedding. Per-view selection is the starting point. Separate full per-view models are rejected: they duplicate features, give each model less data, and behave inconsistently. Either way, only three adequacy scores and one ten-entry directional vector are ever reported.
-- **Uncertainty.** The reported uncertainty $\mathbf{u}_t$ comes from an ensemble of same-architecture models trained from different initializations, summarized per output group by the rule fixed in Section 4E.
+- **Uncertainty.** The reported uncertainty $\mathbf{u}_t$ comes from an ensemble of a small fixed number of same-architecture models trained from different initializations, summarized per output group by the rule fixed in Section 4E.
 
-The view head stays image-only to prevent target-label leakage, the failure in which the model infers the answer from the request rather than from the image:
+The view head stays image-only, and the conditioned heads are trained to read the image rather than the request; together these prevent target-label leakage, the failure in which the model infers the answer from the requested target rather than from the image:
 
 - $v_{\mathrm{target}}$ is never an input to the view head, so it cannot shortcut to "the requested view is present."
 - The visible-view label $y^{\mathrm{view}}_t$ and the requested target $v_{\mathrm{target}}$ are kept as distinct variables; training data are not built by setting $v_{\mathrm{target}} = y^{\mathrm{view}}_t$ on every frame.
@@ -77,27 +77,27 @@ Training uses public, expert-annotated echocardiography datasets, each under its
 - **Preprocessing.** Frames are preprocessed identically to runtime and standardized across manufacturer, device, image size, depth, gain, operator technique, and site, with ultrasound-specific preprocessing and augmentation for cross-device generalization.
 - **Heterogeneous labels.** A given frame may carry a view label, adequacy labels, no degradation label, or no directional label. This is expected and handled by the masked loss in Section 3C, so a head updates only on frames that carry its label.
 - **Adequacy labels.** Each adequacy component needs an expert labeling rubric, with a defined plan for datasets that lack adequacy labels (additional expert labeling, masked losses, or both). View classification and adequacy labeling are distinct tasks and are not interchangeable.
-- **Directional labels.** Directional labels come from action-response transitions, generated mainly by controlled probe perturbations around expert-confirmed phantom poses (Section 6B). The corrective label for a perturbation is its reverse adjustment, which yields physically grounded labels without asking experts to estimate corrections from static images.
+- **Directional labels.** Directional labels come from action-response transitions, generated mainly by controlled probe perturbations around expert-confirmed phantom poses. The corrective label for a perturbation is its reverse adjustment, which yields physically grounded labels without asking experts to estimate corrections from static images (Section 3C).
 
 ### C. Training, Validation, and Runtime Characterization
 
 The model is built one output at a time, so each output is verified before the next is added:
 
 1. Encoder $E$ and the view head from $\mathcal{I}_t$; this stage also validates the splits and preprocessing.
-2. Target-conditioned adequacy heads, freezing much of the encoder first, then optionally fine-tuning jointly.
-3. Degradation evidence as a multi-label output (separate sigmoid scores, not a softmax).
+2. Target-conditioned adequacy heads, freezing much of the pretrained encoder first, then optionally fine-tuning jointly; this freeze-then-fine-tune sequence is the transfer-learning procedure.
+3. Degradation evidence as a multi-label output, with separate sigmoid scores rather than a softmax, the same independent-score form used by the adequacy and directional heads (only the view head is a softmax over mutually exclusive classes).
 4. Directional guidance from action-response data.
 5. Uncertainty calibration and integration, after each output performs adequately on its own.
 
-A masked multitask loss sums one term per output, weighted by $\lambda_{\bullet}$, with each term active only on frames that carry the matching label:
+A masked multitask loss sums one term per output, weighted by $\lambda_{\bullet}$, with each term active only on training samples that carry the matching label (a frame for the view, adequacy, and degradation terms; a transition for the directional term):
 
 $$\mathcal{L} = \lambda_{\mathrm{view}}\mathcal{L}_{\mathrm{view}} + \lambda_{\mathrm{adequacy}}\mathcal{L}_{\mathrm{adequacy}} + \lambda_{\mathrm{degradation}}\mathcal{L}_{\mathrm{degradation}} + \lambda_{\mathrm{direction}}\mathcal{L}_{\mathrm{direction}}.$$
 
-The directional head is trained on transitions, not single images. A training sample pairs the image before and after one applied action $a_t$, with the resulting change in adequacy:
+The directional head is trained on transitions, not single images. A training sample pairs the images before and after one applied action $a_t$, where $a_t$ is one of the ten bounded directions, together with the resulting change in adequacy:
 
 $$(\mathcal{I}_t,\ v_{\mathrm{target}},\ a_t,\ \mathcal{I}_{t+1}), \qquad \Delta\mathbf{a}_t = \mathbf{a}^{(v_{\mathrm{target}})}_{t+1} - \mathbf{a}^{(v_{\mathrm{target}})}_t.$$
 
-Each action is labeled by whether adequacy improved, and the head learns a per-action improvement score, conceptually the probability that adequacy improves given the current image, target, and action. This probability-of-improvement is a training-side construct only: the reported output keeps the Section 4D meaning, how strongly the image supports each bounded adjustment, and is not labeled a probability.
+Each action is labeled by whether the target-view adequacy improved overall, measured by the change in its aggregate $Q(\mathbf{a}^{(v_{\mathrm{target}})}_t)$ (the aggregate defined in Section 6A). The controlled perturbations make this concrete: a perturbation from a known-good pose degrades the image, so its reverse adjustment is the improving action and supplies the positively labeled corrective direction. Each transition supervises the applied direction and, through that reverse, its opposite; the remaining directions are left unlabeled and masked. The head learns a per-action improvement score, conceptually the probability that adequacy improves given the current image, target, and action. This probability is a training-side construct only and is not reported as a calibrated probability: the reported output keeps the Section 4D meaning, how strongly the image supports each bounded adjustment.
 
 Uncertainty is treated as a validation problem, not a single output neuron. It is characterized through probability calibration, ensemble disagreement, temporal consistency, out-of-distribution behavior, and whether high uncertainty actually flags wrong or out-of-envelope predictions. A raw network confidence value is never assumed sufficient on its own.
 
@@ -220,7 +220,7 @@ $$\mathcal{C}_t = (\hat{\mathbf{n}}_t,\ \Pi_t,\ \tau^{\mathcal{C}}_t,\ \mathrm{v
 
 where $\hat{\mathbf{n}}_t$ is the estimated local chest-surface normal, $\Pi_t$ the tangent plane, $\tau^{\mathcal{C}}_t$ the estimate time, and $\mathrm{valid}^{\mathcal{C}}_t$ whether the estimate is usable. It is re-estimated as the contact geometry changes. The estimation method and any tangent-axis convention are deferred.
 
-The force/torque sensor observes a compensated wrench in the end-effector/sensor frame, with tool weight and bias removed, providing contact force $\mathbf{f}_t$ and contact torque $\boldsymbol{\tau}_t$. Normal and tangential force are not measured directly but decomposed relative to $\hat{\mathbf{n}}_t$:
+The force/torque sensor observes a compensated wrench (the combined contact force and torque) in the end-effector/sensor frame, with tool weight and bias removed, providing contact force $\mathbf{f}_t$ and contact torque $\boldsymbol{\tau}_t$. Normal and tangential force are not measured directly but decomposed relative to $\hat{\mathbf{n}}_t$, with both vectors first expressed in a common frame and $\hat{\mathbf{n}}_t$ pointing from the probe into the chest, so compression gives $F_{n,t} > 0$:
 
 $$F_{n,t} = \hat{\mathbf{n}}_t \cdot \mathbf{f}_t, \qquad \mathbf{f}^{\mathrm{tan}}_t = \mathbf{f}_t - F_{n,t}\,\hat{\mathbf{n}}_t.$$
 
@@ -228,18 +228,18 @@ These quantities define the physical interface consumed downstream: current prob
 
 ### B. Fused State, Timing, and Action-Response History
 
-The runtime flow of Section 1 passes through four representational levels of increasing integration: the image-perception packet $\mathbf{o}_t$ (Section 4), the fused interaction state $\mathbf{z}_t$, the command proposal (Section 6), and safety-gated execution (Section 7). The fused interaction state is the second. It combines the perception packet with the measured physical signals the perception model never sees, so the controller and supervisor act on one coherent object rather than on the image alone:
+The fused interaction state $\mathbf{z}_t$ combines the perception packet with the measured physical signals the perception model never sees, so the controller and supervisor act on one coherent object rather than on the image alone. It is the second of four representational levels along the Section 1 flow: the image-perception packet $\mathbf{o}_t$ (Section 4), the fused interaction state $\mathbf{z}_t$, the command proposal (Section 6), and safety-gated execution (Section 7).
 
 $$\mathbf{z}_t = \Phi\big(\mathbf{o}_t,\ \mathbf{T}_{\mathrm{bp},t},\ F_{n,t},\ \mathbf{f}^{\mathrm{tan}}_t,\ \boldsymbol{\tau}_t,\ \mathcal{C}_t,\ \mathcal{H}_t,\ \alpha_t\big),$$
 
 where $\mathbf{o}_t$ is the perception packet (Section 4), $\mathbf{T}_{\mathrm{bp},t}$ the probe pose, $F_{n,t}$, $\mathbf{f}^{\mathrm{tan}}_t$, and $\boldsymbol{\tau}_t$ the decomposed contact loading, and $\mathcal{C}_t$ the local contact representation (all from Section 5A); $\mathcal{H}_t$ is the recent action-response history and $\alpha_t$ the frame age. The fusion map $\Phi$ exposes two derived quantities used downstream: the physical-cause hypothesis $\mathbf{m}_t$ and the fused reliability $r_t$.
 
-- **Timing and pairing.** The frame age $\alpha_t = t - \tau^{\mathrm{img}}_t$ is the delay between the acquisition time $\tau^{\mathrm{img}}_t$ of the newest frame in $\mathcal{I}_t$ and the current update $t$. The history $\mathcal{H}_t$ stores recent commands aligned with the image and force responses they produced, so an improvement is attributed to the action that caused it.
-- **Physical-cause hypothesis.** $\mathbf{m}_t$ scores the candidate physical causes of a degraded image: pose displacement, coupling impairment, attenuation or shadowing, chest motion, or uncertain. It is a separate object from the image-degradation evidence $\mathbf{e}^{\mathrm{deg}}_t$: the image reports evidence, and $\mathbf{m}_t$ forms the determination by combining that evidence with force and recent motion. Coupling impairment, for instance, is supported when $e_{\mathrm{coupling}}$ is high while the measured normal force $F_{n,t}$ is low.
+- **Timing and pairing.** The frame age $\alpha_t = t - \tau^{\mathrm{img}}_t$ is the delay between the acquisition time $\tau^{\mathrm{img}}_t$ of the newest frame in $\mathcal{I}_t$ (a timestamp, distinct from the contact torque $\boldsymbol{\tau}_t$) and the current update $t$. The history $\mathcal{H}_t$ stores recent commands aligned with the image and force responses they produced, so an improvement is attributed to the action that caused it.
+- **Physical-cause hypothesis.** $\mathbf{m}_t$ scores the candidate physical causes of a degraded image: pose displacement, coupling impairment, attenuation or shadowing, chest motion, or uncertain. It is a separate object from the image-degradation evidence $\mathbf{e}^{\mathrm{deg}}_t$: the image reports evidence, and $\mathbf{m}_t$ forms the determination by combining that evidence with force and recent motion. This is what separates the confusions the system must avoid: coupling impairment shows high $e_{\mathrm{coupling}}$ with low or marginal $F_{n,t}$; insufficient penetration, as over a thick or high-body-mass chest wall, shows high $e_{\mathrm{penetration}}$ with $F_{n,t}$ already adequate; and pose displacement off the acoustic window shows falling adequacy while $e_{\mathrm{coupling}}$, $e_{\mathrm{penetration}}$, and $F_{n,t}$ stay nominal.
 - **Fused reliability.** $r_t$ reports whether the fused signals can be acted on: whether contact is stable, whether the force and image signals are mutually consistent, and whether the frame is fresh (small $\alpha_t$). It is distinct from the image-model uncertainty $\mathbf{u}_t$, which reports only whether the ensemble members agree. The two can diverge: the ensemble may agree on an image while contact is unstable, or disagree on an image while the physical signals are clean.
 - **Optional compliance.** $\Phi$ may track recent force-response behavior or an effective local compliance if useful, but this does not imply a complete chest-wall stiffness model, and $\mathbf{z}_t$ stays coherent without it.
 
-Contact stability and sensor consistency are assessed here, through $r_t$, before any action is considered downstream.
+Contact stability and sensor consistency are assessed here, through $r_t$, before any action is considered downstream. The working symbol $\mathbf{z}_t$, the field list above, and the command-to-response pairing in $\mathcal{H}_t$ are a reference design; the final symbol and exact fields remain to be settled.
 
 ## 6. Hybrid Force and Pose Control
 
@@ -250,13 +250,13 @@ The command proposal is the third representational level: from the fused state $
 - **Normal direction ($z_{\mathrm{p}}$):** assigned to force control, which regulates the normal contact force (Section 6C).
 - **Tangent plane and rotations:** the translations along $x_{\mathrm{p}}$ and $y_{\mathrm{p}}$ and the rotations about $x_{\mathrm{p}}$, $y_{\mathrm{p}}$, and $z_{\mathrm{p}}$ are assigned to image-guided refinement (Section 6B).
 
-Force and pose remain physically coupled through chest deformation, so each channel keeps its primary objective while the controller monitors the other's cross-effects. Proposed corrections are expressed in the local contact or probe frame, passed through safety and kinematic filtering, and converted into bounded end-effector or joint commands with limited magnitude and velocity.
+Force and pose remain physically coupled through chest deformation, so each channel keeps its primary objective while the controller monitors the other's cross-effects. The force-controlled direction is the chest-surface normal $\hat{\mathbf{n}}_t$ (Section 5A), which coincides with the probe-face normal $z_{\mathrm{p}}$ only when the probe sits squarely on the surface; in general they differ, so the controller maps between the probe frame and the contact frame before issuing commands. Proposed corrections are expressed in the local contact or probe frame, passed through safety and kinematic filtering, and converted into bounded end-effector or joint commands with limited magnitude and velocity.
 
 A single scalar summarizes attainment. The composite attainment scalar is
 
 $$s_t = p_{v_{\mathrm{target}},\,t}\,\cdot\,Q\!\left(\mathbf{a}^{(v_{\mathrm{target}})}_t\right),$$
 
-where $p_{v_{\mathrm{target}},\,t}$ is the view probability for the selected target, taken from $\mathbf{p}^{\mathrm{view}}_t$, and $Q$ aggregates the three adequacy components into one value from 0 to 1. Because both factors lie between 0 and 1, so does $s_t$, and $s_t$ is high only when the image is both the requested view and an adequate instance of it. $Q$ is non-compensatory or guard-railed, so strong scores on two adequacy components cannot fully mask failure on the third; its exact form is deferred (candidate forms: minimum component, soft minimum, geometric mean, or a guarded mean with per-component minimum thresholds). Attainment is declared when $s_t$ reaches and holds at or above a threshold $s^*$ (Section 7B). The generic symbol $s$ used locally in Section 4E denotes an arbitrary output component and is distinct from this composite attainment scalar.
+where $p_{v_{\mathrm{target}},\,t}$ is the entry of $\mathbf{p}^{\mathrm{view}}_t$ for the selected target view, and $Q$ aggregates the three adequacy components into one value from 0 to 1. So $s_t$ runs from 0 to 1, and the product is deliberately conservative: either a low view probability or a low adequacy drives $s_t$ low, so $s_t$ is high only when the image is both the requested view and an adequate instance of it. $Q$ is built so that a weak score on any one adequacy component pulls the result down, and two strong components cannot hide a weak third; its exact form is deferred, with candidates including the minimum of the three components, a smooth minimum, the geometric mean, or a mean with a floor on each component. Attainment is declared when $s_t$ reaches and holds at or above a threshold $s^*$ for the required interval (the 2 s hold of Section 7B). In Section 4E the symbol $s_t$ is a local placeholder for the ensemble average of an arbitrary output component; here $s_t$ is the composite attainment scalar, a different quantity.
 
 The roles are divided as follows:
 
@@ -264,14 +264,14 @@ The roles are divided as follows:
 - The structured packet $\mathbf{o}_t$ and the fused state $\mathbf{z}_t$ drive action selection and action gating.
 - The directional vector $\mathbf{d}^{(v_{\mathrm{target}})}_t$ informs which bounded move to try; it does not replace $s_t$.
 
-This is derivative-free local refinement: the controller uses no analytic gradient, and $\mathbf{d}^{(v_{\mathrm{target}})}_t$ makes the bounded search more informed than an undirected one. Each update follows one propose, gate, evaluate cycle:
+The controller refines the pose by trying small bounded moves and keeping those that improve the image, rather than by computing a gradient; this is derivative-free local refinement, and $\mathbf{d}^{(v_{\mathrm{target}})}_t$ makes the bounded search more informed than an undirected one. Each update follows one propose, gate, evaluate cycle:
 
 1. The supervisor verdict $g_t$ (Section 7A) is checked first; the controller may act only when it permits.
 2. If $s_t \ge s^*$ has held for the required interval, the system is in maintenance (Section 7B); otherwise it proposes one correction.
 3. A pose correction is selected from $\mathbf{d}^{(v_{\mathrm{target}})}_t$ (Section 6B) and, in parallel, the normal-force reference is managed by the force law (Section 6C); the physical-cause hypothesis $\mathbf{m}_t$ governs which channel responds.
 4. One bounded command is applied, settling time is allowed, and the image and force response is evaluated, after which the action is accepted, rejected, or reversed.
 
-The division of roles above is fixed. The exact arithmetic that maps $s_t$, $\mathbf{d}^{(v_{\mathrm{target}})}_t$, $\mathbf{e}^{\mathrm{deg}}_t$, $\mathbf{u}_t$, and $\mathbf{z}_t$ into a single accept-or-reject decision is the reference design of Sections 6B and 6C; its thresholds and weighting are deferred tuning.
+The division of roles above is fixed. How $s_t$, $\mathbf{d}^{(v_{\mathrm{target}})}_t$, $\mathbf{e}^{\mathrm{deg}}_t$, $\mathbf{u}_t$, and $\mathbf{z}_t$ combine into a single accept-or-reject decision is a genuine open design decision: Sections 6B and 6C give the reference design, and the exact rule, with its thresholds and weighting, remains to be settled.
 
 ### B. Bounded Image-Guided Tangential and Angular Refinement
 
@@ -287,17 +287,19 @@ If all directional scores are low, no pose correction is supported and the contr
 
 As an extension only, an online local response model estimates an action-response matrix $J_t$ around the current pose from recent safe perturbations,
 
-$$\Delta\mathbf{a} \approx J_t\,\Delta\mathbf{q},$$
+$$\Delta\mathbf{a}_t \approx J_t\,\Delta\mathbf{x}_{\mathrm{img}},$$
 
-where $\Delta\mathbf{q}$ is a small probe-frame move and $\Delta\mathbf{a}$ the resulting adequacy change, and chooses a bounded, regularized update subject to motion, force, and workspace limits. This is more capable and more complex, and is presented as an alternative, not a requirement.
+where $\Delta\mathbf{x}_{\mathrm{img}}$ is a small move over the five image-guided degrees of freedom (Section 5A), $\Delta\mathbf{a}_t$ is the resulting change in the three adequacy components, and $J_t$ is the 3 by 5 matrix relating them (a response map over probe motion, not a kinematic Jacobian over joints). The controller then chooses a bounded, regularized update that raises $s_t$, subject to motion, force, and workspace limits. This is more capable and more complex than the ranked-action design, and is presented as an alternative, not a requirement.
 
 ### C. Constant and Adaptive Normal-Force Control
 
-The normal channel is a classical admittance law that tracks a bounded force reference. With the measured normal force $F_{n,t}$ from Section 5A and a commanded force reference $F_{\mathrm{ref},t}$, the force error drives a bounded normal velocity:
+The normal channel uses an admittance law: a control rule that turns the force error into a commanded probe velocity, so the probe yields when it presses too hard and advances when contact is too light, tracking a bounded force reference. With the measured normal force $F_{n,t}$ from Section 5A and a commanded force reference $F_{\mathrm{ref},t}$, the force error drives a bounded normal velocity:
 
 $$e_{F,t} = F_{\mathrm{ref},t} - F_{n,t}, \qquad M_a\,\dot{v}_{n,t} + B_a\,v_{n,t} = e_{F,t}, \qquad |v_{n,t}| \le v_{n,\max}, \qquad F_{\min} \le F_{\mathrm{ref},t} \le F_{\max},$$
 
-where $v_{n,t}$ is the commanded normal velocity, $M_a$ and $B_a$ are the virtual admittance inertia and damping, $v_{n,\max}$ bounds the normal speed, and $[F_{\min},\ F_{\max}]$ bounds the reference.
+where $e_{F,t}$ is the force-tracking error (a scalar force mismatch, unrelated to the degradation evidence $\mathbf{e}^{\mathrm{deg}}_t$), $v_{n,t}$ is the commanded normal velocity, $M_a$ and $B_a$ are the virtual admittance inertia and damping, $v_{n,\max}$ bounds the normal speed, and $[F_{\min},\ F_{\max}]$ bounds the reference. The gains $M_a$ and $B_a$ are fixed, chosen conservatively for the stiffest contact expected (a rib) so the normal response stays stable over soft tissue as well; the controller adapts the force reference, not these gains. The effective-compliance estimate of Section 5B could inform a bounded gain schedule later, but that is not the starting design.
+
+This law commands continued advance whenever the measured force is below the reference, so a loss of contact must not be read as a reason to drive forward. If $F_{n,t}$ falls below a contact-detection threshold, the safety supervisor holds or unloads rather than advancing (the controlled-unload verdict of Section 7A), and a bounded normal-advance limit caps travel in every case. This is what prevents the probe from overshooting the acoustic window into the patient when coupling or contact is lost.
 
 - **Constant-force mode:** $F_{\mathrm{ref},t} = F_0$, a fixed force reference, not a fixed normal position. The probe may move along the normal as the surface moves while the target force holds.
 - **Adaptive-force mode:** the reference may change within bounds, $F_{\mathrm{ref},t+1} = \operatorname{clip}(F_{\mathrm{ref},t} + \Delta F_t,\ F_{\min},\ F_{\max})$.
@@ -306,8 +308,8 @@ Both modes may move along the normal; the difference is only whether the target 
 
 | Fused condition | Force response |
 | --- | --- |
-| Coupling-impairment evidence with low measured force | small bounded increase in $F_{\mathrm{ref}}$ permitted |
-| Coupling-impairment evidence with adequate measured force | hold force; try a pose adjustment or request operator inspection or gel |
+| Coupling-impairment evidence with low measured force | small bounded increase in the force reference permitted |
+| Coupling-impairment evidence with adequate measured force | do not assume more force helps; hold force, try a pose adjustment, or request operator inspection or gel |
 | Acoustic shadowing | no force increase; prefer tangential or angular correction |
 | Insufficient penetration | limited force adjustment only if within range and evidence suggests compression helps; no repeated escalation |
 | High adequacy | hold the current reference |
@@ -318,7 +320,7 @@ A low adequacy or attainment score must never, by itself, drive continued force 
 
 Force adaptation stays downstream of perception because the controller has direct access to measured force and torque, owns the force-rate and abort limits, and keeps the perception model focused on image interpretation. Normal translation is excluded from $\mathbf{d}^{(v_{\mathrm{target}})}_t$ because a fixed normal displacement has an inconsistent physical effect, depending on local compliance (little force change in soft tissue, a large increase over a rib), so the normal direction is represented by a force objective rather than an image-predicted translation. For experimental comparison, the same image-guided pose strategy is used in both force modes, so the contrast isolates the added contribution of adaptive force.
 
-Deferred tuning: the force-reference increment size, the persistence window before an adjustment, the improvement metric after an adjustment, the reversal or rejection criterion, and whether reference adaptation runs only during persistent coupling-related recovery or also during maintenance under strict triggers.
+Deferred tuning: the force-reference increment size, the persistence window before an adjustment, the improvement metric after an adjustment, the reversal or rejection criterion, and whether reference adaptation runs only during persistent coupling-impairment recovery or also during maintenance under strict triggers.
 
 ## 7. Safety and Runtime Operation
 
@@ -343,8 +345,14 @@ One runtime sequence covers the full session:
 4. Proposal and safety gating of one bounded adjustment (Sections 6, 7A).
 5. Evaluation of the resulting image and force response, then accept, reject, or reverse.
 6. Sustained target attainment, declared when $s_t \ge s^*$ holds for the required interval (a 2 s sustained hold).
-7. Lower-amplitude maintenance corrections, where a single-frame decline does not trigger motion.
-8. Cause-aware recovery after persistent degradation, keyed to the physical-cause hypothesis $\mathbf{m}_t$: likely pose displacement gets a bounded tangential or angular correction; likely coupling loss with low force gets a small bounded force-reference increase; suspected coupling loss with adequate force gets a hold plus operator inspection or gel; suspected shadowing or attenuation gets an angular or lateral correction with no automatic force increase; and high uncertainty or conflicting sensors gets a hold and return of authority to the operator.
+7. Lower-amplitude maintenance corrections, where a brief sub-threshold dip (under about 0.5 s, the maintenance tolerance of Section 8B) does not trigger motion.
+8. Cause-aware recovery after persistent degradation, keyed to the physical-cause hypothesis $\mathbf{m}_t$:
+   - likely pose displacement: a bounded tangential or angular correction;
+   - likely coupling impairment with low force: a small bounded force-reference increase;
+   - suspected coupling impairment with adequate force: a hold plus operator inspection or gel;
+   - suspected shadowing or attenuation: an angular or lateral correction with no automatic force increase;
+   - likely chest motion: continued force tracking of the moving surface, with no pose change;
+   - high uncertainty or conflicting sensors: a hold and return of authority to the operator.
 
 Here $s^*$ is the attainment threshold on $s_t$ defined in Section 6A, the bar both factors of $s_t$ must jointly clear.
 
@@ -367,28 +375,38 @@ A classification probability or confidence score can be nonlinear, discontinuous
 The committed signal requirements are:
 
 - **Latency:** the median at or below 100 ms and the 95th percentile at or below 150 ms, with an update rate at or above 10 Hz. The 30 to 50 ms within-cardiac-cycle target is future, not committed.
-- **Stability:** the median absolute deviation of $s_t$ at or below 0.05 within held-constant windows. This is the noise floor against which the pose-response criterion is read.
+- **Stability:** the median absolute deviation of $s_t$ at or below 0.05 within held-constant windows. This is the stability floor against which the pose-response criterion is read.
 - **Graded coupling response:** a monotone decline in $s_t$ as coupling degrades, with a negative rank correlation of magnitude at or above 0.7, or a significantly negative ordinal slope.
-- **Local pose-response:** an ordered decline in $s_t$ out to the search bound, plus a capture basin in which improving and worsening moves are distinguishable above the stability floor.
+- **Local pose-response:** an ordered decline in $s_t$ out to the search bound, plus a capture basin: a useful-sized region around the target pose within which moves that improve the image and moves that worsen it change $s_t$ by more than the stability floor.
 
 ### B. Controller, Safety, and Operating-Envelope Validation
 
-Validation tests directional action-response accuracy; force tracking and compliance response; the constant-versus-adaptive force comparison; pose-force coupling under different local surface conditions; overshoot and repeated-action behavior; safety stop and operator override; attainment, maintenance, and recovery behavior; stage-specific operating envelopes for phantom and volunteer use; and fallback behavior when a requirement is not met.
+Validation covers:
 
-The control proxy stays separate from the diagnostic-quality standard: a case where $s_t$ is high but blinded review judges the view inadequate is scored as a control-proxy failure, never a success. Two independent blinded readers score views against BSE and ASE criteria, and their agreement is reported as Cohen's kappa.
+- directional action-response accuracy;
+- force tracking and compliance response;
+- the constant-versus-adaptive force comparison;
+- pose-force coupling under different local surface conditions;
+- overshoot and repeated-action behavior;
+- safety stop and operator override;
+- attainment, maintenance, and recovery behavior;
+- stage-specific operating envelopes for phantom and volunteer use;
+- fallback behavior when a requirement is not met.
 
-The validation endpoints are summarized in one table:
+The control proxy stays separate from the diagnostic-quality standard: a case where $s_t$ is high but blinded review judges the view inadequate is scored as a control-proxy failure, never a success. Two independent blinded readers score views against published echocardiography adequacy guidelines (the British Society of Echocardiography, BSE, and the American Society of Echocardiography, ASE), and their agreement is reported as Cohen's kappa.
+
+The validation endpoints are summarized in one table (Aim 2 is the attainment experiment; Aim 3 is the maintenance-and-recovery experiment):
 
 | Endpoint | Requirement | How measured | Response if unmet |
 | --- | --- | --- | --- |
-| Attainment benefit (Aim 2) | integrated-minus-pose-only difference, 95% CI lower bound at or above +10 pp | matched start-pose blocks, integrated versus pose-only | narrow the claim to pose refinement |
-| Diagnostic-quality guardrail | 95% CI lower bound at or above -15 pp | two blinded readers versus BSE and ASE criteria, Cohen's kappa | report quality loss; not counted as attainment |
+| Attainment benefit (Aim 2) | integrated-minus-pose-only difference, 95% confidence-interval lower bound at or above +10 percentage points | matched start-pose blocks, integrated versus pose-only | narrow the claim to pose refinement |
+| Diagnostic-quality guardrail | 95% confidence-interval lower bound at or above -15 percentage points | two blinded readers versus BSE and ASE criteria, Cohen's kappa | report quality loss; not counted as attainment |
 | Maintenance duration (Aim 3) | longer above $s^*$ than pose-only | Kaplan-Meier and restricted mean survival time to 60 s; dips under about 0.5 s tolerated | report no maintenance benefit |
 | Recovery time | re-attainment within 30 s | from the $s^*$ down-crossing to a 2 s sustained hold; non-recoveries retained | retain as non-recovery |
 | Respiratory robustness | benefit maintained as severity rises | sweep at 5, 10, and 15 mm peak-to-peak near 0.25 Hz, plus an irregular condition | report the severity at which benefit is lost |
 | Force safety | within a conservative literature-derived bound | force and torque logging against $[F_{\min},\ F_{\max}]$ | abort and controlled unload |
 
-The force bound is derived from obstetric probe-force literature and used as a conservative safety reference, not as a validated TTE force range. The rib-shadowing, window-geometry, and coupling-loss disturbance modules are added only if reproducible, and otherwise reported as not built.
+The force bound is derived from obstetric probe-force literature and used as a conservative safety reference, not as a validated force range for transthoracic echocardiography (TTE). The rib-shadowing, window-geometry, and coupling-loss disturbance modules are added only if reproducible, and otherwise reported as not built.
 
 ---
 
