@@ -176,7 +176,7 @@ $$\Delta \mathbf{x}_{\mathrm{img}} = [\Delta x_{\mathrm{p}},\ \Delta y_{\mathrm{
 
 The sixth degree of freedom, translation along the probe-face normal $z_{\mathrm{p}}$, is controlled through force regulation.
 
-A calibrated transform chain gives the probe pose in the robot-base frame:
+A transform chain gives the probe pose in the robot-base frame:
 
 $$\mathbf{T}_{\mathrm{bp},t} = \mathbf{T}_{\mathrm{bs},t}(\mathbf{q}_t)\,\mathbf{T}_{\mathrm{sp}},$$
 
