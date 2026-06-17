@@ -170,7 +170,7 @@ Close agreement does not guarantee that an output is correct. This output descri
 
 ### A. Robot, Force Sensing, and Local Coordinate Frames
 
-A robotic manipulator holds the probe and controls its full six-degree-of-freedom pose, separated into five image-guided directions in the probe-fixed frame and the probe-face normal:
+A robotic manipulator holds the probe and controls it in all six degrees of freedom. Five are image-guided in the probe-fixed frame:
 
 $$\Delta \mathbf{x}_{\mathrm{img}} = [\Delta x_{\mathrm{p}},\ \Delta y_{\mathrm{p}},\ \Delta\theta_{x_{\mathrm{p}}},\ \Delta\theta_{y_{\mathrm{p}}},\ \Delta\theta_{z_{\mathrm{p}}}].$$
 
