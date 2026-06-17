@@ -176,11 +176,11 @@ $$\Delta \mathbf{x}_{\mathrm{img}} = [\Delta x_{\mathrm{p}},\ \Delta y_{\mathrm{
 
 The sixth degree of freedom, translation along the probe-face normal $z_{\mathrm{p}}$, is controlled through force regulation.
 
-The robot-base, end-effector/sensor, and probe-fixed frames carry these quantities through a calibrated chain:
+A calibrated transform chain gives the probe pose in the robot-base frame:
 
 $$\mathbf{T}_{\mathrm{bp},t} = \mathbf{T}_{\mathrm{bs},t}(\mathbf{q}_t)\,\mathbf{T}_{\mathrm{sp}},$$
 
-with $\mathbf{T}_{\mathrm{bs},t}(\mathbf{q}_t)$ the forward kinematics from joint states $\mathbf{q}_t$ and $\mathbf{T}_{\mathrm{sp}}$ the fixed sensor-to-probe calibration. Inverse kinematics maps an approved bounded Cartesian probe correction to joint-space motion.
+Forward kinematics gives the base-to-sensor transform $\mathbf{T}_{\mathrm{bs},t}$ from the current joint states $\mathbf{q}_t$, and $\mathbf{T}_{\mathrm{sp}}$ is the fixed sensor-to-probe calibration. Inverse kinematics maps an approved probe correction to joint motion.
 
 The local contact representation gives the current contact geometry:
 
